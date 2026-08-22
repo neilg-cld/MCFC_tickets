@@ -2,6 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#101C33">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MC Tickets">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Manchester City FC — Season Tickets</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -465,6 +473,9 @@
    instead of a comment that drifts out of sync with the real thing.
    ===================================================================== */
 const CHANGELOG = [
+  {version:'1.17.1', date:'2026-08-22', notes:[
+    'Added a web app manifest and icons, so "Add to Home Screen" now installs a real standalone app (own icon, launches full-screen, no browser address bar) instead of just a bookmarked tab. Needs manifest.json and the three icon files sitting alongside index.html in the repo.'
+  ]},
   {version:'1.17.0', date:'2026-08-22', notes:[
     'Cloud sync via GitHub. Settings → Cloud sync connects this app to a secret GitHub gist that holds one shared copy of your season data. Set up once per device with a GitHub token (Gists: read and write); after that the app pulls the latest copy every time it opens and pushes automatically a moment after any change. This is what makes phone and laptop show the same data — local browser storage never could.',
     'The token is stored in that browser\'s local storage only. It is never written into the gist, never included in an export backup, and only ever sent to api.github.com.',
