@@ -1,0 +1,1996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manchester City FC — Season Tickets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky:#6CABDD;
+    --sky-deep:#3E86C4;
+    --navy:#101C33;
+    --navy-2:#16233F;
+    --paper:#F3F6FA;
+    --card:#FFFFFF;
+    --ink:#142032;
+    --ink-soft:#5B6B80;
+    --line:#E1E7EE;
+    --gold:#E8B84B;
+    --green:#2F8F5B;
+    --green-bg:#E7F5EC;
+    --amber:#D98A2B;
+    --amber-bg:#FBF0DD;
+    --grey:#9AA6B2;
+    --grey-bg:#EEF1F4;
+    --coral:#D9544B;
+    --coral-bg:#FBE7E5;
+    --violet:#7B6CD9;
+    --violet-bg:#EEEBFB;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .scoreboard{font-family:'Teko',sans-serif; letter-spacing:0.02em;}
+
+  /* ---------- Header ---------- */
+  header.top{
+    background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 60%,var(--sky-deep) 130%);
+    color:#fff;
+    padding:22px 20px 28px;
+    position:relative;
+    overflow:hidden;
+  }
+  header.top::after{
+    content:"";
+    position:absolute; right:-40px; top:-60px;
+    width:220px; height:220px; border-radius:50%;
+    background:radial-gradient(circle at 30% 30%, rgba(108,171,221,0.35), transparent 70%);
+  }
+  .top-row{display:flex; justify-content:space-between; align-items:flex-start; position:relative; z-index:1;}
+  .eyebrow{
+    font-size:11px; text-transform:uppercase; letter-spacing:0.14em; color:var(--sky);
+    font-weight:600; margin:0 0 4px;
+  }
+  h1.title{
+    font-family:'Teko',sans-serif; font-weight:700; font-size:40px; line-height:0.95;
+    margin:0; letter-spacing:0.01em;
+  }
+  .subtitle{color:#B9C6DA; font-size:13px; margin-top:6px;}
+  .settings-btn{
+    background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18);
+    color:#fff; border-radius:10px; padding:9px 14px; font-size:13px; font-weight:500;
+    cursor:pointer; display:flex; align-items:center; gap:6px;
+  }
+  .settings-btn:hover{background:rgba(255,255,255,0.16);}
+  .version-tag{font-size:10.5px; color:#9FB0C8; font-family:'JetBrains Mono',monospace; letter-spacing:0.02em;}
+
+  /* stat strip */
+  .stats{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:10px;
+    margin-top:20px; position:relative; z-index:1;
+  }
+  .stat{
+    background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.14);
+    border-radius:12px; padding:12px 14px;
+  }
+  .stat .label{font-size:10.5px; text-transform:uppercase; letter-spacing:0.08em; color:#9FB0C8;}
+  .stat .value{font-family:'JetBrains Mono',monospace; font-size:20px; font-weight:600; margin-top:3px; color:#fff;}
+  .stat .value.pos{color:#8FE3B0;}
+  .stat .value.neg{color:#F3A79E;}
+
+  @media(max-width:640px){
+    .stats{grid-template-columns:repeat(2,1fr);}
+    h1.title{font-size:32px;}
+  }
+
+  /* ---------- Next fixture ribbon ---------- */
+  .next-fixture{
+    max-width:900px; margin:-18px auto 0; padding:0 20px; position:relative; z-index:2;
+  }
+  .next-card{
+    background:var(--card); border-radius:var(--radius); box-shadow:0 8px 24px rgba(16,28,51,0.10);
+    padding:14px 18px; display:flex; align-items:center; justify-content:space-between; gap:12px;
+    border:1px solid var(--line);
+  }
+  .next-card .nf-label{font-size:10.5px; text-transform:uppercase; letter-spacing:0.1em; color:var(--sky-deep); font-weight:700;}
+  .next-card .nf-opp{font-family:'Teko',sans-serif; font-size:24px; font-weight:600; line-height:1;}
+  .next-card .nf-meta{font-size:12.5px; color:var(--ink-soft); margin-top:2px;}
+  .nf-countdown{
+    font-family:'JetBrains Mono',monospace; background:var(--sky); color:#fff;
+    border-radius:8px; padding:8px 12px; font-size:13px; font-weight:600; white-space:nowrap;
+  }
+
+  /* ---------- Main ---------- */
+  main{max-width:900px; margin:0 auto; padding:20px 20px 80px;}
+
+  .controls{display:flex; gap:8px; margin:22px 0 14px; flex-wrap:wrap; align-items:center;}
+  .tab{
+    border:1px solid var(--line); background:var(--card); color:var(--ink-soft);
+    padding:7px 13px; border-radius:999px; font-size:13px; font-weight:500; cursor:pointer;
+  }
+  .tab.active{background:var(--navy); border-color:var(--navy); color:#fff;}
+  .spacer{flex:1;}
+  .legend{font-size:11.5px; color:var(--ink-soft); display:flex; gap:10px; flex-wrap:wrap;}
+  .legend span{display:inline-flex; align-items:center; gap:4px;}
+  .dot{width:8px; height:8px; border-radius:50%; display:inline-block;}
+
+  /* ---------- Fixture list ---------- */
+  .fixture{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:14px 16px; margin-bottom:10px; cursor:pointer; transition:box-shadow .15s, border-color .15s;
+    position:relative;
+  }
+  .fixture:hover{box-shadow:0 6px 18px rgba(16,28,51,0.08); border-color:#CFDCE8;}
+  .fixture.past{opacity:0.6;}
+  .frow-top{display:flex; align-items:center; gap:14px;}
+  .fdate{
+    width:52px; text-align:center; flex-shrink:0;
+  }
+  .fdate .dow{font-size:10px; text-transform:uppercase; color:var(--ink-soft); letter-spacing:0.06em;}
+  .fdate .dnum{font-family:'Teko',sans-serif; font-size:26px; font-weight:600; line-height:1;}
+  .fdate .mon{font-size:10px; color:var(--ink-soft); text-transform:uppercase;}
+  .fmid{flex:1; min-width:0;}
+  .fopp{font-family:'Teko',sans-serif; font-size:21px; font-weight:600; display:flex; align-items:center; gap:7px;}
+  .rivalry{
+    font-size:9px; background:var(--coral-bg); color:var(--coral); border-radius:5px;
+    padding:2px 6px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; font-family:'Inter',sans-serif;
+  }
+  .fmeta{font-size:12px; color:var(--ink-soft); margin-top:1px;}
+  .fnet{flex-shrink:0; font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--ink-soft);}
+  .seats-full{display:flex; gap:8px; margin-top:12px;}
+  .seat-col{flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; gap:4px;}
+  .seat-initials{
+    font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; color:var(--ink-soft);
+    letter-spacing:0.03em;
+  }
+  .seat-chip{
+    width:100%; height:32px; border-radius:8px; border:1px solid rgba(0,0,0,0.06);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700; letter-spacing:0.02em;
+  }
+  @media(max-width:480px){
+    .seat-chip{height:36px; font-size:11.5px;}
+  }
+
+  /* status colors */
+  .c-pending{background:var(--grey-bg); border:1px dashed #C3CCD6; color:#7C8A9A;}
+  .c-attending{background:#DCEBF9; color:#1D5A8C;}
+  .c-guest{background:var(--violet-bg); color:#5747B8;}
+  .c-listed{background:var(--amber-bg); color:#A9670F;}
+  .c-sold{background:var(--green-bg); color:#1F6B41;}
+  .c-unused{background:var(--grey-bg); color:#6B7684;}
+  .c-exchanged{background:#DEF3F6; color:#2A7E8F;}
+  .c-transferred{background:#F6E9C8; color:#8C6A11;}
+  .prov-tag{
+    font-size:9.5px; color:var(--amber); background:var(--amber-bg); border-radius:5px;
+    padding:1px 5px; margin-left:5px; font-weight:600; text-transform:uppercase; letter-spacing:0.03em;
+  }
+  .score-tag{
+    font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11.5px; color:var(--green);
+    background:var(--green-bg); border-radius:5px; padding:1px 7px;
+  }
+
+  /* ---------- Modal ---------- */
+  .overlay{
+    position:fixed; inset:0; background:rgba(16,20,30,0.5); display:none;
+    align-items:flex-end; justify-content:center; z-index:50; backdrop-filter:blur(2px);
+  }
+  .overlay.show{display:flex;}
+  @media(min-width:640px){ .overlay{align-items:center;} }
+  .modal{
+    background:var(--card); width:100%; max-width:560px; max-height:88vh; overflow-y:auto;
+    border-radius:18px 18px 0 0; padding:22px 20px 28px;
+  }
+  @media(min-width:640px){ .modal{border-radius:18px;} }
+  .modal-head{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;}
+  .modal-head h2{font-family:'Teko',sans-serif; font-size:28px; font-weight:600; margin:0;}
+  .modal-head .mh-meta{font-size:12.5px; color:var(--ink-soft); margin-top:2px;}
+  .close-x{
+    border:none; background:var(--grey-bg); width:30px; height:30px; border-radius:50%;
+    font-size:16px; cursor:pointer; color:var(--ink-soft); flex-shrink:0;
+  }
+  .kickoff-row{display:flex; gap:8px; align-items:center; margin:14px 0 18px;}
+  .kickoff-row label{font-size:12px; color:var(--ink-soft);}
+  .kickoff-row input{
+    border:1px solid var(--line); border-radius:8px; padding:6px 9px; font-size:13px; font-family:'JetBrains Mono',monospace;
+  }
+  .seat-card{
+    border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:10px;
+  }
+  .seat-card.bulk-active{border-color:var(--sky-deep); box-shadow:0 0 0 1px var(--sky-deep) inset;}
+  .bulk-select{width:15px; height:15px; accent-color:var(--sky-deep); margin-right:2px; cursor:pointer;}
+  .bulk-toggle-row{font-size:12px; color:var(--ink-soft); margin:2px 0 10px;}
+  .bulk-toggle-row input{accent-color:var(--sky-deep); margin-right:5px;}
+  .bulk-bar{
+    background:#EAF3FB; border:1px solid #BFDCF2; border-radius:12px; padding:12px 14px; margin-bottom:14px;
+  }
+  .bulk-bar-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;}
+  .bulk-bar-head strong{font-size:13px;}
+  .bulk-bar-head button{
+    border:none; background:transparent; color:var(--sky-deep); font-size:12px; font-weight:600; cursor:pointer;
+  }
+  .bulk-apply-btn{
+    background:var(--navy); color:#fff; border:none; border-radius:8px; padding:8px 14px;
+    font-size:13px; font-weight:600; cursor:pointer; margin-top:8px;
+  }
+  .bulk-apply-btn:hover{background:var(--navy-2);}
+  .seat-card .sc-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;}
+  .sc-holder{font-weight:600; font-size:14.5px; display:flex; align-items:center; gap:7px;}
+  .sc-seatno{font-size:11px; color:var(--ink-soft); font-family:'JetBrains Mono',monospace;}
+  .status-select{
+    width:100%; border:1px solid var(--line); border-radius:8px; padding:8px 10px;
+    font-size:13.5px; font-family:'Inter',sans-serif; background:#fff; color:var(--ink);
+  }
+  .extra-fields{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;}
+  .extra-fields.single{grid-template-columns:1fr;}
+  .extra-fields input, .extra-fields select{
+    border:1px solid var(--line); border-radius:8px; padding:7px 9px; font-size:13px; width:100%;
+    font-family:'Inter',sans-serif;
+  }
+  .field-label{font-size:10.5px; color:var(--ink-soft); margin-bottom:3px; display:block; text-transform:uppercase; letter-spacing:0.04em;}
+  .suggest{font-size:11.5px; color:var(--ink-soft); margin-top:6px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+  .suggest strong{color:var(--ink);}
+  .use-suggested{
+    border:1px solid var(--sky-deep); background:#EAF3FB; color:var(--sky-deep);
+    border-radius:7px; padding:3px 9px; font-size:11px; font-weight:600; cursor:pointer;
+  }
+  .use-suggested:hover{background:var(--sky-deep); color:#fff;}
+  .backup-btn{
+    border:1px solid var(--line); background:var(--card); color:var(--ink);
+    border-radius:8px; padding:8px 14px; font-size:13px; font-weight:600; cursor:pointer;
+  }
+  .backup-btn:hover{background:var(--grey-bg);}
+  .cl-list{max-height:60vh; overflow-y:auto; margin-top:8px;}
+  .cl-entry{border-bottom:1px solid var(--line); padding:10px 0;}
+  .cl-entry:last-child{border-bottom:none;}
+  .cl-entry-head{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;}
+  .cl-entry-head strong{font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--sky-deep);}
+  .cl-entry-head span{font-size:11px; color:var(--ink-soft);}
+  .cl-entry ul{margin:0; padding-left:18px;}
+  .cl-entry li{font-size:12.5px; color:var(--ink); margin-bottom:3px; line-height:1.4;}
+  .freshness-bar{
+    max-width:900px; margin:14px auto 0; padding:0 20px;
+    display:flex; gap:8px; flex-wrap:wrap; align-items:center;
+  }
+  .freshness-pill{
+    font-size:11.5px; padding:6px 12px; border-radius:999px; display:inline-flex; align-items:center; gap:6px;
+    border:1px solid var(--line); background:var(--card); color:var(--ink-soft);
+  }
+  .freshness-pill.stale{border-color:#F0C98A; background:var(--amber-bg); color:#8C5E12;}
+  .freshness-pill .fp-dot{width:6px;height:6px;border-radius:50%;background:var(--green);}
+  .freshness-pill.stale .fp-dot{background:var(--amber);}
+  .check-updates-btn{
+    font-size:11.5px; padding:6px 12px; border-radius:999px; display:inline-flex; align-items:center; gap:5px;
+    border:1px solid var(--sky-deep); background:#EAF3FB; color:var(--sky-deep); font-weight:600; cursor:pointer;
+  }
+  .check-updates-btn:hover{background:var(--sky-deep); color:#fff;}
+
+  .access-section{margin:22px 0 4px;}
+  .access-head{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;}
+  .access-head h3{font-family:'Teko',sans-serif; font-size:20px; font-weight:600; margin:0;}
+  .access-head p{font-size:11.5px; color:var(--ink-soft); margin:0;}
+  .access-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px;}
+  @media(max-width:640px){ .access-grid{grid-template-columns:repeat(2,1fr);} }
+  .access-card{
+    background:var(--card); border:1px solid var(--line); border-radius:12px; padding:11px 12px;
+  }
+  .access-card .ac-name{font-size:13px; font-weight:600; display:flex; justify-content:space-between; align-items:baseline;}
+  .access-card .ac-count{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--ink-soft);}
+  .ac-bar{height:6px; border-radius:4px; background:var(--grey-bg); margin:7px 0 6px; overflow:hidden;}
+  .ac-bar-fill{height:100%; border-radius:4px; background:var(--sky-deep);}
+  .ac-bar-fill.met{background:var(--green);}
+  .ac-bar-fill.risk{background:var(--amber);}
+  .ac-bar-fill.off{background:var(--coral);}
+  .ac-status{font-size:10.5px; font-weight:600; text-transform:uppercase; letter-spacing:0.03em;}
+  .ac-status.met{color:var(--green);}
+  .ac-status.ontrack{color:var(--sky-deep);}
+  .ac-status.risk{color:var(--amber);}
+  .ac-status.off{color:var(--coral);}
+  .modal-footer{margin-top:16px; display:flex; justify-content:space-between; align-items:center;}
+  .save-btn{
+    background:var(--navy); color:#fff; border:none; border-radius:10px; padding:11px 18px;
+    font-size:14px; font-weight:600; cursor:pointer; width:100%;
+  }
+  .save-btn:hover{background:var(--navy-2);}
+
+  /* settings modal specifics */
+  .settings-section h3{
+    font-size:12px; text-transform:uppercase; letter-spacing:0.07em; color:var(--ink-soft);
+    margin:18px 0 8px; font-weight:700;
+  }
+  .settings-section h3:first-child{margin-top:0;}
+  .settings-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  .settings-grid label{font-size:12px; color:var(--ink-soft); display:block; margin-bottom:3px;}
+  .settings-grid input{width:100%; border:1px solid var(--line); border-radius:8px; padding:7px 9px; font-size:13px; font-family:'JetBrains Mono',monospace;}
+  .price-table{width:100%; border-collapse:collapse; font-size:12.5px; margin-top:4px;}
+  .price-table th{text-align:left; font-weight:600; color:var(--ink-soft); font-size:11px; padding-bottom:4px;}
+  .price-table td{padding:3px 4px 3px 0;}
+  .price-table input{width:100%; border:1px solid var(--line); border-radius:6px; padding:5px 7px; font-family:'JetBrains Mono',monospace; font-size:12.5px;}
+
+  .toast{
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+    background:var(--navy); color:#fff; padding:10px 18px; border-radius:999px; font-size:13px;
+    z-index:100; opacity:0; pointer-events:none; transition:opacity .2s, transform .2s;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(-6px);}
+  footer{text-align:center; font-size:11px; color:var(--ink-soft); padding:10px 0 30px;}
+  /* ---------- Print (A4, one page) ---------- */
+  .print-only{display:none;}
+  @media print{
+    html, body{height:auto !important; margin:0 !important; padding:0 !important;}
+    body > *{ display:none !important; }
+    body > #printView{
+      display:block !important; position:static !important; width:auto !important;
+      font-family:'Inter',system-ui,sans-serif; color:#101C33; -webkit-print-color-adjust:exact; print-color-adjust:exact;
+    }
+    @page{ size:A4; margin:12mm 18mm; }
+  }
+  .pv-header{display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid #101C33; padding-bottom:8px; margin-bottom:14px;}
+  .pv-header h1{font-family:'Teko',sans-serif; font-size:30px; font-weight:700; margin:0;}
+  .pv-header .pv-meta{font-size:10.5px; color:#5B6B80; text-align:right;}
+  .pv-section-title{font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:#5B6B80; margin:16px 0 7px;}
+  .pv-access-table{width:100%; border-collapse:collapse; margin-bottom:4px; table-layout:fixed;}
+  .pv-access-table th, .pv-access-table td{border:1px solid #D8DFE7; padding:7px 10px; font-size:12px; text-align:left;}
+  .pv-access-table th{background:#F3F6FA; font-weight:700;}
+  .pv-fixtures-table{width:100%; border-collapse:collapse; table-layout:fixed;}
+  .pv-fixtures-table col.pv-col-date{width:10%;}
+  .pv-fixtures-table col.pv-col-opp{width:17%;}
+  .pv-fixtures-table col.pv-col-ko{width:10%;}
+  .pv-fixtures-table col.pv-col-seat{width:13%;}
+  .pv-fixtures-table col.pv-col-net{width:11%;}
+  .pv-fixtures-table th{background:#101C33; color:#fff; font-size:10.5px; text-transform:uppercase; letter-spacing:0.03em; padding:7px 8px; text-align:left;}
+  .pv-fixtures-table td{border:1px solid #D8DFE7; padding:7px 8px; font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .pv-fixtures-table tr:nth-child(even) td{background:#F8FAFC;}
+  .pv-status-cell{text-align:center; font-family:'JetBrains Mono',monospace; font-weight:700; font-size:13px; border-radius:3px;}
+  .pv-opp{font-weight:600; white-space:normal; overflow:visible; text-overflow:clip; line-height:1.2;}
+  .pv-rivalry{color:#D9544B; font-weight:700;}
+  .pv-footer{display:flex; justify-content:space-between; margin-top:16px; padding-top:9px; border-top:2px solid #101C33; font-size:12px;}
+  .pv-footer .pv-foot-item strong{font-family:'JetBrains Mono',monospace; font-size:15px; display:block; margin-top:2px;}
+  .pv-legend{font-size:9.5px; color:#5B6B80; margin-top:9px; line-height:1.5;}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-row">
+    <div>
+      <p class="eyebrow">Colin Bell Stand · Block 031 · Row Y</p>
+      <h1 class="title">Season Tickets</h1>
+      <p class="subtitle" id="headerSubtitle">Etihad Stadium</p>
+    </div>
+    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+      <div style="display:flex; gap:6px;">
+        <button class="settings-btn" onclick="openSettings()">⚙ Settings</button>
+        <button class="settings-btn" onclick="printSeason()">🖶 Print</button>
+      </div>
+      <span class="version-tag" id="appVersion"></span>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="label">Total Outlay</div><div class="value mono" id="statOutlay">—</div></div>
+    <div class="stat"><div class="label">Recovered</div><div class="value pos mono" id="statRecovered">—</div></div>
+    <div class="stat"><div class="label">Net Cost</div><div class="value mono" id="statNet">—</div></div>
+    <div class="stat"><div class="label">Seats Used</div><div class="value mono" id="statUsed">—</div></div>
+  </div>
+</header>
+
+<div class="next-fixture">
+  <div class="next-card" id="nextCard">
+    <div>
+      <div class="nf-label">Next home game</div>
+      <div class="nf-opp" id="nfOpp">—</div>
+      <div class="nf-meta" id="nfMeta">—</div>
+    </div>
+    <div class="nf-countdown" id="nfCountdown">—</div>
+  </div>
+</div>
+
+<div class="freshness-bar" id="freshnessBar"></div>
+
+<main>
+  <div class="access-section">
+    <div class="access-head">
+      <h3>Match access this season</h3>
+      <p id="accessThresholdLabel">Min. <span id="accessThresholdVal">10</span> phone uses per ticket</p>
+    </div>
+    <div class="access-grid" id="accessGrid"></div>
+  </div>
+
+  <div class="controls">
+    <button class="tab active" data-filter="all">All 19</button>
+    <button class="tab" data-filter="upcoming">Upcoming</button>
+    <button class="tab" data-filter="forsale">For sale</button>
+    <button class="tab" data-filter="action">Needs action</button>
+    <div class="spacer"></div>
+  </div>
+  <div class="legend">
+    <span><span class="dot c-pending"></span>Pending</span>
+    <span><span class="dot c-attending"></span>Attending</span>
+    <span><span class="dot c-guest"></span>Guest</span>
+    <span><span class="dot c-listed"></span>Listed</span>
+    <span><span class="dot c-sold"></span>Sold</span>
+    <span><span class="dot c-unused"></span>Unused</span>
+    <span><span class="dot c-exchanged"></span>Exchanged</span>
+    <span><span class="dot c-transferred"></span>Transferred</span>
+  </div>
+
+  <div id="fixtureList"></div>
+</main>
+
+<footer id="storageFooter">Data stored privately · not shared</footer>
+
+<!-- Fixture modal -->
+<div class="overlay" id="fixtureOverlay">
+  <div class="modal" id="fixtureModal"></div>
+</div>
+
+<!-- Settings modal -->
+<div class="overlay" id="settingsOverlay">
+  <div class="modal" id="settingsModal"></div>
+</div>
+
+<!-- Changelog modal -->
+<div class="overlay" id="changelogOverlay">
+  <div class="modal" id="changelogModal"></div>
+</div>
+
+<!-- Fixture data import modal (dates/kick-offs/scores only — never ticket data) -->
+<div class="overlay" id="fixtureImportOverlay">
+  <div class="modal" id="fixtureImportModal"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div id="printView" class="print-only"></div>
+
+<script>
+/* =====================================================================
+   Semantic versioning (MAJOR.MINOR.PATCH):
+     MAJOR — breaking change to how data is structured/stored
+     MINOR — any functional/code change: new feature, changed behaviour,
+             reworked logic (default bump for normal briefing changes)
+     PATCH — bug fix only, no behaviour change intended
+
+   CHANGELOG lives as data below (newest first) so it can also power the
+   in-app "View changelog" button in Settings — one source of truth
+   instead of a comment that drifts out of sync with the real thing.
+   ===================================================================== */
+const CHANGELOG = [
+  {version:'1.17.0', date:'2026-08-22', notes:[
+    'Cloud sync via GitHub. Settings → Cloud sync connects this app to a secret GitHub gist that holds one shared copy of your season data. Set up once per device with a GitHub token (Gists: read and write); after that the app pulls the latest copy every time it opens and pushes automatically a moment after any change. This is what makes phone and laptop show the same data — local browser storage never could.',
+    'The token is stored in that browser\'s local storage only. It is never written into the gist, never included in an export backup, and only ever sent to api.github.com.',
+    'Conflict guard: if the cloud copy changed on another device since this one last saw it, the app asks before overwriting rather than silently winning.',
+    'Local storage still runs underneath as the offline cache, so the app works normally with sync off or with no connection.',
+    'App title is no longer year-stamped — it now reads "Season Tickets", with the season shown as an editable label (Settings → Season) that appears in the header, on printouts and in backup files. The app carries over to next season without a rebuild.'
+  ]},
+  {version:'1.16.0', date:'2026-08-01', notes:[
+    'Built a Claude skill, "mcfc-fixture-update", that does the actual mancity.com check and hands back a small JSON patch file (not a rebuilt app) — install it once via the .skill file, then just ask Claude to run it.',
+    'Consolidated the two-button workflow into one: "🔄 Check for fixture updates" now opens a single modal covering both steps — copy the prompt for the skill (and a quick manual link to mancity.com), then upload or paste the file it gives back, all in one place.',
+    'The apply step now accepts a file upload as well as pasting, so the skill\'s output file can be used directly.'
+  ]},
+  {version:'1.15.0', date:'2026-08-01', notes:[
+    'New: "📥 Import fixture update" button, home page. Paste a small JSON snippet (dates, kick-off times, results) and it patches only that data — seat statuses, prices, everything ticket-related is completely untouched. This means fixture/result updates never require swapping in a new copy of the app, so there\'s no risk to your season\'s data.',
+    '"Check for updates" now copies a prompt asking Claude for that exact JSON format, so the two features work together: check → paste → done.',
+    'Kick-off times, dates and results are now layered on top of the built-in schedule (settings.fixtureOverrides) rather than baked into the code, so imported patches persist and survive future app updates too.'
+  ]},
+  {version:'1.14.0', date:'2026-08-01', notes:[
+    'Added a "🔄 Check for updates" button on the home page (next to the freshness pills). Important: a downloaded HTML file can\'t browse the internet on its own — browsers don\'t allow that, whether it\'s viewed live in Claude or opened as a plain file. The button copies a ready-made prompt to your clipboard and opens the official mancity.com fixtures page for a quick look; paste the prompt into a Claude chat to have the actual check done and the app updated.',
+    'Added match-result tracking (fixture list and print view show "FT 3-1" once a result is recorded) alongside the existing fixture/kick-off tracking — priority stays on schedule changes, with scores as a secondary layer.',
+    'Re-verified the full fixture list and kick-off times against mancity.com/fixtures/mens today — no changes since the last check.'
+  ]},
+  {version:'1.13.0', date:'2026-07-23', notes:[
+    'Added an in-app changelog viewer — button in Settings, next to the version number.',
+    'Stopped generating the separate git-repo zip each time (was going stale and wasn\'t being used) — this in-app changelog is now the record of what changed and when.'
+  ]},
+  {version:'1.12.1', date:'2026-07-23', notes:[
+    'Bug fix: print margins widened at the sides (12mm top/bottom, 18mm left/right) — the reworked layout was reading too wide at the edges.',
+    'Bug fix: saved data restore was only a shallow merge, so a seat or setting saved by an older app version could be missing fields a newer version added, causing blank dropdowns or bad calculations. Loading and importing a backup now deep-merges every seat and every settings sub-object onto current defaults, so old local data always restores cleanly under a newer version.'
+  ]},
+  {version:'1.12.0', date:'2026-07-23', notes:[
+    'Print layout: Opponent column made narrower with fixed column widths (wraps to two lines instead of truncating for longer names), and every other column — date, KO, all 4 seat boxes, net — widened to fill the freed-up space.',
+    'Fonts and row padding increased throughout the print page so it reads as full and legible rather than leaving empty margin.'
+  ]},
+  {version:'1.11.0', date:'2026-07-23', notes:[
+    'Bug fix: print/PDF was rendering as 4 pages with 3 blank ones, because hiding the app for print used visibility:hidden, which keeps the full page height in the layout. Switched to display:none so the document collapses to just the print content — genuinely one page now.',
+    'Renamed the print title and the browser-tab title from "Colin Bell Stand" to "Manchester City FC" (the seat-block detail elsewhere in the app is unchanged).'
+  ]},
+  {version:'1.10.0', date:'2026-07-23', notes:[
+    'Print button (header, next to Settings): lays out the entire season on one A4 page — match-access summary per holder against the minimum, then all 19 fixtures with every seat\'s status and net recovered, plus season financial totals. Use the browser\'s print dialog and "Save as PDF" for a PDF copy.'
+  ]},
+  {version:'1.9.0', date:'2026-07-23', notes:[
+    'Cosmetic: the 4 seat-status boxes moved to their own full-width row beneath the fixture info, stretching evenly to fill the card. Boxes are noticeably bigger (32-36px tall vs 19px).'
+  ]},
+  {version:'1.8.0', date:'2026-07-23', notes:[
+    'Cosmetic: the 4 seat-status boxes in each fixture row are now a fixed size.',
+    'Status codes are all meaningful 4-letter abbreviations (PEND, ATTN, GUES, LIST, SOLD, UNUS, EXCH, XFER).',
+    'Each box now has the seat owner\'s initials above it (NG / SG / MG / SB).'
+  ]},
+  {version:'1.7.0', date:'2026-07-23', notes:[
+    'Export/Import backup, in Settings. Export downloads a dated JSON file with all settings + seat assignments; Import restores from one (with a confirm prompt, since it overwrites current data).'
+  ]},
+  {version:'1.6.1', date:'2026-07-23', notes:[
+    'Bug fix: data was lost on refresh when the file was opened as a plain downloaded file rather than live inside a Claude.ai artifact panel, because window.storage doesn\'t exist in that context. Added a localStorage fallback so data now persists either way. Footer states which storage mode is active.'
+  ]},
+  {version:'1.6.0', date:'2026-07-23', notes:[
+    'Version number moved to the top header (next to Settings) so it\'s visible immediately, rather than the footer.',
+    'Bug fix: the status dot beside each seat name in the fixture modal wasn\'t updating when the status dropdown changed.'
+  ]},
+  {version:'1.5.0', date:'2026-07-23', notes:[
+    'Match-access tracker refined to four tiers: Target met, On track, At risk (remaining games only 0-1 more than what\'s still needed), Off track (mathematically can\'t reach the minimum even using every remaining game).',
+    '"Needs action" filter now flags any fixture with a Pending seat, rather than Listed/Unused.'
+  ]},
+  {version:'1.4.0', date:'2026-07-23', notes:[
+    'Bulk apply: select multiple seats in a fixture and apply one status + shared details at once; price still computed per seat (e.g. each seat\'s own 1/19th, or the ticket-type/basis suggested price).'
+  ]},
+  {version:'1.3.0', date:'2026-07-23', notes:[
+    'Status model rebuilt to match confirmed definitions: Listed = submitted to club exchange, price fixed by club, outcome pending; Exchanged = sold via club exchange, auto-valued at 1/19th of season price; Unused = didn\'t sell, zero recovery. Guest and Transferred gained optional fee fields.',
+    'Added the match-access tracker (min. phone uses per ticket, counting Attending/Guest/Sold only).'
+  ]},
+  {version:'1.2.0', date:'2026-07-23', notes:[
+    'Kick-off times sourced from mancity.com/fixtures/mens (confirmed vs provisional flagged).',
+    'Transferred "recipient" field; Sold pricing calculator (ticket type + price basis + suggested price).',
+    'Exchange rate set-once-a-year with dated flag; data freshness banner on load.'
+  ]},
+  {version:'1.1.0', date:'2026-07-23', notes:[
+    'Seat-status chips show text codes, not just colour; default seat status changed to Pending; responsive layout for the seat row on mobile.'
+  ]},
+  {version:'1.0.0', date:'2026-07-23', notes:[
+    'Initial build: 19 home fixtures for 2026/27, 4-seat status tracker, financial dashboard, settings (seat costs, FX rate, resale price guide), persistent storage.'
+  ]},
+];
+const APP_VERSION = CHANGELOG[0].version;
+
+/* ================= DATA ================= */
+const SEATS = ['Neil','Sam','Maia','Sarah'];
+const SEAT_NUMBERS = {Neil:'R28 857', Sam:'R28 856', Maia:'R28 855', Sarah:'R28 854'};
+const SEAT_INITIALS = {Neil:'NG', Sam:'SG', Maia:'MG', Sarah:'SB'};
+
+const FIXTURES = [
+  {id:'f1',  date:'2026-08-23', opp:'Bournemouth',              rivalry:false},
+  {id:'f2',  date:'2026-09-05', opp:'Coventry City',             rivalry:false},
+  {id:'f3',  date:'2026-09-19', opp:'Sunderland',                rivalry:false},
+  {id:'f4',  date:'2026-10-17', opp:'Ipswich Town',              rivalry:false},
+  {id:'f5',  date:'2026-10-31', opp:'Brighton & Hove Albion',    rivalry:false},
+  {id:'f6',  date:'2026-11-21', opp:'Fulham',                    rivalry:false},
+  {id:'f7',  date:'2026-12-02', opp:'Leeds United',              rivalry:false},
+  {id:'f8',  date:'2026-12-12', opp:'Chelsea',                   rivalry:true},
+  {id:'f9',  date:'2026-12-19', opp:'Hull City',                 rivalry:false},
+  {id:'f10', date:'2027-01-02', opp:'Tottenham Hotspur',         rivalry:true},
+  {id:'f11', date:'2027-01-16', opp:'Nottingham Forest',         rivalry:false},
+  {id:'f12', date:'2027-01-30', opp:'Arsenal',                   rivalry:true},
+  {id:'f13', date:'2027-02-20', opp:'Newcastle United',          rivalry:false},
+  {id:'f14', date:'2027-03-03', opp:'Everton',                   rivalry:false},
+  {id:'f15', date:'2027-03-20', opp:'Manchester United',         rivalry:true},
+  {id:'f16', date:'2027-04-17', opp:'Crystal Palace',            rivalry:false},
+  {id:'f17', date:'2027-05-01', opp:'Brentford',                 rivalry:false},
+  {id:'f18', date:'2027-05-08', opp:'Liverpool',                 rivalry:true},
+  {id:'f19', date:'2027-05-23', opp:'Aston Villa',               rivalry:false},
+];
+// Kick-off times (UK local), converted from mancity.com's listed ET times.
+// Confirmed fixtures (no "subject to change" flag on the club site) are plain times;
+// the rest are the club's current default broadcast slot and may still move —
+// edit them in-app as the Premier League confirms each one.
+const DEFAULT_KICKOFFS = {
+  f1:'14:00',  f2:'15:00',  f3:'15:00',  f4:'15:00',  f5:'15:00',
+  f6:'15:00',  f7:'20:00',  f8:'15:00',  f9:'15:00',  f10:'15:00',
+  f11:'15:00', f12:'15:00', f13:'15:00', f14:'20:00', f15:'15:00',
+  f16:'15:00', f17:'15:00', f18:'15:00', f19:'15:00'
+};
+
+// Match results baked into this file version (fixture id -> "3-1"). Normally stays empty —
+// results and schedule changes arrive via "Import fixture update" instead (settings.fixtureOverrides),
+// which patches live without needing a new copy of the app. See getScore() below.
+const SCORES = {};
+
+// Fixture list + kick-off times + results last checked against mancity.com/fixtures/mens
+// (and mancity.com/results once games are underway) on this date.
+const FIXTURE_DATA_VERIFIED = '2026-08-01';
+
+const DEFAULT_SETTINGS = {
+  // Shown in the header, print header and backup files. The app title itself is
+  // deliberately year-free so this file carries over from season to season —
+  // change this label (Settings) when the season rolls over.
+  seasonLabel: '2026/27',
+  totalGames: 19,
+  fxRate: 1.17,            // GBP -> EUR mid-market rate
+  fxRateSetDate: '2026-07-15', // set once a year — see Settings to refresh
+  seatCost: { Neil:875, Sam:245, Maia:540, Sarah:875 }, // annual cost per seat, EUR
+  resale: {
+    adult:   {gbp:58, eur:74, fnf:58},
+    child:   {gbp:27, eur:32, fnf:27},
+    student: {gbp:45, eur:54, fnf:45}
+  },
+  kickoffs: DEFAULT_KICKOFFS,
+  minPhoneUses: 10, // minimum times per ticket the club app/phone must be used to gain match access this season
+  // Patches on top of the FIXTURES/SCORES baked into this file — a postponed date or a final
+  // score, applied via "Import fixture update" without ever touching seat/ticket data or
+  // requiring a new copy of the app. Keyed by fixture id: { date?: 'YYYY-MM-DD', score?: '3-1' }
+  fixtureOverrides: {},
+  fixtureDataCheckedOn: FIXTURE_DATA_VERIFIED // bumped by "Import fixture update"; independent of app version
+};
+
+const STATUS_META = {
+  pending:     {label:'Pending — no action yet',                color:'c-pending',     code:'PEND'},
+  attending:   {label:'Attending',                               color:'c-attending',   code:'ATTN'},
+  guest:       {label:'Guest using seat',                        color:'c-guest',       code:'GUES'},
+  listed:      {label:'Listed on club exchange — outcome pending', color:'c-listed',    code:'LIST'},
+  sold:        {label:'Sold privately',                          color:'c-sold',        code:'SOLD'},
+  unused:      {label:'Unused — wasted',                         color:'c-unused',      code:'UNUS'},
+  exchanged:   {label:'Sold via club exchange',                  color:'c-exchanged',   code:'EXCH'},
+  transferred: {label:'Transferred (1 game, via club site)',     color:'c-transferred', code:'XFER'},
+};
+// Statuses where the phone/app on which the tickets live is actually used for match access —
+// i.e. someone physically enters using this phone's ticket. Exchanged/Transferred access happens
+// via the buyer's or recipient's own club account, not this phone; Unused means nobody enters at all.
+const COUNTS_TOWARD_ACCESS = new Set(['attending','guest','sold']);
+// Kick-off times sourced from mancity.com/fixtures/mens (checked 15 Jul 2026).
+// These three had no "subject to change" flag on the club site — treated as confirmed.
+const CONFIRMED_KO_IDS = new Set(['f1','f2','f3']);
+// All other home fixtures carry a "date & kick-off time subject to change" flag on mancity.com.
+const PROVISIONAL_KO_IDS = new Set(['f4','f5','f6','f7','f8','f9','f10','f11','f12','f13','f14','f15','f16','f17','f18','f19']);
+
+/* ================= STATE ================= */
+let settings = structuredClone(DEFAULT_SETTINGS);
+let assignments = {}; // { fixtureId: { Neil:{status,...}, Sam:{...}, ... } }
+let currentFilter = 'all';
+let openFixtureId = null;
+let bulkSelectedSeats = new Set();
+let bulkStatus = 'attending';
+
+function defaultSeatState(){
+  return {
+    status:'pending', guestName:'', buyerName:'', recipientName:'', amount:'', note:'',
+    ticketType:'adult', priceBasis:'fnf'
+  };
+}
+function ensureAssignment(fid){
+  if(!assignments[fid]) assignments[fid] = {};
+  SEATS.forEach(s=>{ if(!assignments[fid][s]) assignments[fid][s] = defaultSeatState(); });
+}
+FIXTURES.forEach(f=>ensureAssignment(f.id));
+
+// Merge a saved settings object onto today's defaults, so a save from an older
+// app version — missing fields this version added — still loads cleanly, and
+// any brand-new settings this version introduced get sensible defaults rather
+// than being undefined. Nested objects (seatCost/kickoffs/resale) are merged
+// key-by-key rather than replaced wholesale, so e.g. a 5th seat or a new
+// resale category added in a future version wouldn't be silently dropped.
+function mergeSettings(saved){
+  const merged = structuredClone(DEFAULT_SETTINGS);
+  if(!saved || typeof saved !== 'object') return merged;
+  Object.keys(saved).forEach(key=>{
+    if(key==='seatCost' || key==='kickoffs' || key==='fixtureOverrides'){
+      merged[key] = Object.assign({}, merged[key], saved[key]);
+    } else if(key==='resale' && saved.resale && typeof saved.resale==='object'){
+      merged.resale = {};
+      Object.keys(DEFAULT_SETTINGS.resale).forEach(cat=>{
+        merged.resale[cat] = Object.assign({}, DEFAULT_SETTINGS.resale[cat], saved.resale[cat] || {});
+      });
+    } else if(key in merged){
+      merged[key] = saved[key];
+    }
+    // A key from a much newer save that no longer exists in this DEFAULT_SETTINGS
+    // (e.g. a setting later removed or renamed) is simply skipped, not applied.
+  });
+  return merged;
+}
+
+// Same idea for a saved fixture: merge each seat onto today's defaultSeatState(),
+// so a seat saved by an older version (missing a field this version added, like
+// ticketType or recipientName) still gets that field filled in rather than left
+// undefined and breaking a dropdown or calculation.
+function mergeAssignments(saved){
+  const merged = {};
+  FIXTURES.forEach(f=>{
+    merged[f.id] = {};
+    SEATS.forEach(s=>{
+      const savedSeat = saved && saved[f.id] && saved[f.id][s];
+      merged[f.id][s] = Object.assign(defaultSeatState(), savedSeat && typeof savedSeat==='object' ? savedSeat : {});
+    });
+  });
+  return merged;
+}
+
+/* ================= STORAGE =================
+   window.storage only exists while this file is being viewed live inside a
+   Claude.ai artifact panel. Once downloaded and opened directly in a browser
+   (double-clicked, or reopened next matchday), that API isn't present — so
+   this app also keeps a localStorage copy and uses whichever is available. */
+const LS_PREFIX = 'mcfc2627:';
+const hasNativeStorage = typeof window !== 'undefined' && !!window.storage && typeof window.storage.get === 'function';
+
+async function storageGet(key, shared){
+  if(hasNativeStorage){
+    return window.storage.get(key, shared);
+  }
+  const raw = localStorage.getItem(LS_PREFIX + key);
+  if(raw === null) throw new Error('not found');
+  return {key, value: raw, shared};
+}
+async function storageSet(key, value, shared){
+  if(hasNativeStorage){
+    return window.storage.set(key, value, shared);
+  }
+  localStorage.setItem(LS_PREFIX + key, value);
+  return {key, value, shared};
+}
+
+async function loadData(){
+  let savedFromVersion = null;
+  try{
+    const s = await storageGet('settings-2026-27', false);
+    if(s && s.value){
+      const parsed = JSON.parse(s.value);
+      savedFromVersion = parsed && parsed._savedAppVersion || null;
+      settings = mergeSettings(parsed);
+    }
+  }catch(e){ /* no saved settings yet — first run */ }
+  try{
+    const a = await storageGet('assignments-2026-27', false);
+    if(a && a.value){
+      assignments = mergeAssignments(JSON.parse(a.value));
+    }
+  }catch(e){ /* no saved assignments yet — first run */ }
+  FIXTURES.forEach(f=>ensureAssignment(f.id)); // belt-and-braces: fills any fixture missing entirely
+  if(savedFromVersion && savedFromVersion !== APP_VERSION){
+    console.info(`Loaded saved data from app v${savedFromVersion}, running v${APP_VERSION}. Merged onto current defaults.`);
+  }
+  render();
+}
+async function persistSettingsLocal(){
+  try{
+    const payload = Object.assign({}, settings, {_savedAppVersion: APP_VERSION});
+    await storageSet('settings-2026-27', JSON.stringify(payload), false);
+  }
+  catch(e){ showToast('Could not save settings'); }
+}
+async function persistAssignmentsLocal(){
+  try{ await storageSet('assignments-2026-27', JSON.stringify(assignments), false); }
+  catch(e){ showToast('Could not save changes'); }
+}
+// Local write only — used by the cloud pull, which must not immediately push
+// straight back up what it has just pulled down.
+async function saveLocalOnly(){
+  await persistSettingsLocal();
+  await persistAssignmentsLocal();
+}
+async function saveSettings(){ await persistSettingsLocal(); scheduleCloudPush(); }
+async function saveAssignments(){ await persistAssignmentsLocal(); scheduleCloudPush(); }
+
+/* ================= CLOUD SYNC (GitHub Gist) =================
+   Local storage is per-browser, so the same file opened on a phone and a laptop
+   keeps two separate copies. This layer keeps one shared copy in a secret GitHub
+   Gist and syncs it: pull on open, push (debounced) after any change.
+
+   The token is a GitHub personal access token with Gists write permission. It is
+   stored in this browser's localStorage only — it is never written into the Gist,
+   never exported in a backup file, and never leaves this device except as an
+   Authorization header to api.github.com. Each device is set up once.
+
+   Note "secret" gist means unlisted, not private — anyone with the URL can read
+   it. Fine for fixture/seat data; don't put anything sensitive in this app. */
+const GIST_FILENAME = 'mancity-season-tickets.json';
+const GH_API = 'https://api.github.com';
+const CK = { token:'mcfc:ghToken', gist:'mcfc:gistId', stamp:'mcfc:remoteStamp', last:'mcfc:lastSync' };
+
+function ckGet(k){ try{ return localStorage.getItem(k) || ''; }catch(e){ return ''; } }
+function ckPut(k,v){ try{ v ? localStorage.setItem(k,v) : localStorage.removeItem(k); }catch(e){} }
+function cloudToken(){ return ckGet(CK.token); }
+function cloudGistId(){ return ckGet(CK.gist); }
+function cloudEnabled(){ return !!(cloudToken() && cloudGistId()); }
+
+let cloudBusy = false;
+let cloudLastError = '';
+let cloudPushTimer = null;
+
+async function ghFetch(path, opts){
+  opts = opts || {};
+  const res = await fetch(GH_API + path, Object.assign({}, opts, {
+    headers: Object.assign({
+      'Accept': 'application/vnd.github+json',
+      'Authorization': 'Bearer ' + cloudToken(),
+      'X-GitHub-Api-Version': '2022-11-28'
+    }, opts.headers || {})
+  }));
+  if(!res.ok){
+    if(res.status===401) throw new Error('token rejected (401) — check it hasn\'t expired');
+    if(res.status===403) throw new Error('forbidden (403) — token may lack Gists write permission');
+    if(res.status===404) throw new Error('gist not found (404) — wrong ID, or token can\'t see it');
+    throw new Error('GitHub returned HTTP ' + res.status);
+  }
+  return res.status===204 ? null : res.json();
+}
+
+function currentCloudPayload(){
+  return {
+    app: 'mancity-season-tickets',
+    season: settings.seasonLabel,
+    appVersion: APP_VERSION,
+    updatedAt: new Date().toISOString(),
+    settings: settings,
+    assignments: assignments
+  };
+}
+
+async function readGistPayload(gist){
+  const files = gist && gist.files || {};
+  const file = files[GIST_FILENAME] || Object.values(files)[0];
+  if(!file) throw new Error('that gist has no data file in it');
+  let text = file.content;
+  if(file.truncated || text == null){
+    const r = await fetch(file.raw_url);
+    text = await r.text();
+  }
+  const parsed = JSON.parse(text);
+  if(!parsed || !parsed.settings || !parsed.assignments) throw new Error('that gist isn\'t season-ticket data');
+  return parsed;
+}
+
+async function cloudPull(opts){
+  opts = opts || {};
+  if(!cloudEnabled()) return false;
+  cloudBusy = true; updateSyncUI();
+  try{
+    const gist = await ghFetch('/gists/' + cloudGistId());
+    const payload = await readGistPayload(gist);
+    settings = mergeSettings(payload.settings);
+    assignments = mergeAssignments(payload.assignments);
+    FIXTURES.forEach(f=>ensureAssignment(f.id));
+    await saveLocalOnly();
+    ckPut(CK.stamp, payload.updatedAt || '');
+    ckPut(CK.last, new Date().toISOString());
+    cloudLastError = '';
+    render();
+    if(!opts.silent) showToast('Pulled latest from cloud');
+    return true;
+  }catch(e){
+    cloudLastError = e.message;
+    if(!opts.silent) showToast('Sync failed — ' + e.message);
+    return false;
+  }finally{
+    cloudBusy = false; updateSyncUI();
+  }
+}
+
+async function cloudPush(opts){
+  opts = opts || {};
+  if(!cloudEnabled()) return false;
+  cloudBusy = true; updateSyncUI();
+  try{
+    // Conflict guard: if the cloud copy changed since we last saw it, another
+    // device has written. Ask rather than silently overwriting.
+    if(!opts.force){
+      let remoteStamp = '';
+      try{
+        const remote = await ghFetch('/gists/' + cloudGistId());
+        remoteStamp = (await readGistPayload(remote)).updatedAt || '';
+      }catch(e){ /* treat as unknown; proceed to write */ }
+      const known = ckGet(CK.stamp);
+      if(remoteStamp && known && remoteStamp !== known){
+        cloudBusy = false; updateSyncUI();
+        const when = new Date(remoteStamp).toLocaleString('en-GB');
+        const overwrite = confirm('The cloud copy was changed on another device (' + when + ').\n\nOK — overwrite it with this device\'s data.\nCancel — discard this device\'s change and pull the cloud copy down instead.');
+        if(!overwrite){ await cloudPull({}); return false; }
+        cloudBusy = true; updateSyncUI();
+      }
+    }
+    const payload = currentCloudPayload();
+    await ghFetch('/gists/' + cloudGistId(), {
+      method: 'PATCH',
+      body: JSON.stringify({ files: { [GIST_FILENAME]: { content: JSON.stringify(payload, null, 2) } } })
+    });
+    ckPut(CK.stamp, payload.updatedAt);
+    ckPut(CK.last, new Date().toISOString());
+    cloudLastError = '';
+    if(!opts.silent) showToast('Pushed to cloud');
+    return true;
+  }catch(e){
+    cloudLastError = e.message;
+    if(!opts.silent) showToast('Sync failed — ' + e.message);
+    return false;
+  }finally{
+    cloudBusy = false; updateSyncUI();
+  }
+}
+
+function scheduleCloudPush(){
+  if(!cloudEnabled()) return;
+  clearTimeout(cloudPushTimer);
+  cloudPushTimer = setTimeout(()=>{ cloudPushTimer = null; cloudPush({silent:true}); }, 1200);
+}
+
+function syncSummary(){
+  if(!cloudEnabled()) return 'Data stored in this browser only · cloud sync off · won\'t follow you to another device';
+  if(cloudBusy) return 'Syncing with GitHub Gist…';
+  if(cloudLastError) return 'Cloud sync problem — ' + cloudLastError;
+  const last = ckGet(CK.last);
+  return 'Synced to GitHub Gist' + (last ? ' · last sync ' + new Date(last).toLocaleString('en-GB',{dateStyle:'short',timeStyle:'short'}) : '');
+}
+function updateSyncUI(){
+  const f = document.getElementById('storageFooter');
+  if(f) f.textContent = syncSummary();
+  const s = document.getElementById('syncStatus');
+  if(s) s.textContent = syncSummary();
+}
+function setSyncStatus(msg){
+  const s = document.getElementById('syncStatus');
+  if(s) s.textContent = msg;
+}
+
+function normaliseGistId(raw){
+  const v = (raw||'').trim().replace(/\/$/,'');
+  if(!v) return '';
+  const parts = v.split('/');
+  return parts[parts.length-1].split('#')[0].split('?')[0];
+}
+
+async function cloudCreateGist(){
+  const token = (document.getElementById('ghTokenInput').value||'').trim();
+  if(!token){ setSyncStatus('Paste a token first.'); return; }
+  ckPut(CK.token, token);
+  setSyncStatus('Creating gist and uploading this device\'s data…');
+  try{
+    const payload = currentCloudPayload();
+    const gist = await ghFetch('/gists', {
+      method: 'POST',
+      body: JSON.stringify({
+        description: 'Manchester City season ticket tracker — data',
+        public: false,
+        files: { [GIST_FILENAME]: { content: JSON.stringify(payload, null, 2) } }
+      })
+    });
+    ckPut(CK.gist, gist.id);
+    ckPut(CK.stamp, payload.updatedAt);
+    ckPut(CK.last, new Date().toISOString());
+    cloudLastError = '';
+    showToast('Cloud sync on — data uploaded');
+    openSettings();
+  }catch(e){
+    setSyncStatus('Could not create the gist — ' + e.message);
+  }
+}
+
+async function cloudConnectExisting(){
+  const token = (document.getElementById('ghTokenInput').value||'').trim();
+  const id = normaliseGistId(document.getElementById('gistIdInput').value);
+  if(!token || !id){ setSyncStatus('Both a token and a gist ID are needed.'); return; }
+  const ok = confirm('Connect to that gist and pull it down?\n\nThis replaces the season data currently held in this browser with the cloud copy.');
+  if(!ok){ setSyncStatus('Cancelled.'); return; }
+  ckPut(CK.token, token);
+  ckPut(CK.gist, id);
+  ckPut(CK.stamp, '');
+  const pulled = await cloudPull({});
+  if(!pulled){ ckPut(CK.gist,''); setSyncStatus('Could not connect — ' + cloudLastError); return; }
+  openSettings();
+}
+
+function cloudDisconnect(){
+  const ok = confirm('Turn off cloud sync on this device?\n\nThe token is removed from this browser. The gist and your data are left untouched, and this browser keeps its own local copy.');
+  if(!ok) return;
+  clearTimeout(cloudPushTimer); cloudPushTimer = null;
+  ckPut(CK.token,''); ckPut(CK.gist,''); ckPut(CK.stamp,''); ckPut(CK.last,'');
+  cloudLastError = '';
+  showToast('Cloud sync off');
+  openSettings();
+}
+
+function copyGistId(){
+  const id = cloudGistId();
+  if(!id) return;
+  navigator.clipboard.writeText(id).then(
+    ()=>showToast('Gist ID copied'),
+    ()=>setSyncStatus('Gist ID: ' + id)
+  );
+}
+
+/* ================= HELPERS ================= */
+function fmtMoney(n){
+  const v = Number(n)||0;
+  return '€' + v.toLocaleString('en-IE',{minimumFractionDigits:0, maximumFractionDigits:0});
+}
+function perGameValue(holder){ return settings.seatCost[holder] / settings.totalGames; }
+function computeSuggestedPrice(ticketType, basis){
+  const rates = settings.resale[ticketType];
+  if(!rates) return 0;
+  if(basis==='gbp') return rates.gbp * settings.fxRate; // convert GBP list price to EUR
+  if(basis==='eur') return rates.eur;
+  return rates.fnf; // friends & family, already EUR
+}
+// Money actually recovered for one seat on one fixture, by status.
+function seatRecoveredValue(seat, st){
+  if(st.status==='sold') return Number(st.amount)||0;                 // private sale, price you set
+  if(st.status==='exchanged') return perGameValue(seat);               // club exchange: fixed 1/19th
+  if(st.status==='guest') return Number(st.amount)||0;                 // usually free, fee optional
+  if(st.status==='transferred') return Number(st.amount)||0;           // fee optional, paid externally
+  return 0; // pending, attending, listed (outcome pending), unused
+}
+function fixtureDate(f){
+  const override = settings.fixtureOverrides[f.id];
+  const dateStr = (override && override.date) ? override.date : f.date;
+  return new Date(dateStr+'T12:00:00');
+}
+function getScore(fid){
+  const override = settings.fixtureOverrides[fid];
+  return (override && override.score) ? override.score : (SCORES[fid] || null);
+}
+function dow(f){ return fixtureDate(f).toLocaleDateString('en-GB',{weekday:'short'}); }
+function dnum(f){ return fixtureDate(f).getDate(); }
+function mon(f){ return fixtureDate(f).toLocaleDateString('en-GB',{month:'short'}); }
+function isPast(f){ return fixtureDate(f) < new Date(); }
+function fixtureNetValue(fid){
+  ensureAssignment(fid);
+  let val = 0;
+  SEATS.forEach(s=>{ val += seatRecoveredValue(s, assignments[fid][s]); });
+  return val;
+}
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1600);
+}
+
+/* ================= RENDER: STATS ================= */
+function renderStats(){
+  const outlay = SEATS.reduce((sum,s)=>sum+settings.seatCost[s],0);
+  let recovered = 0, used = 0, total = FIXTURES.length*SEATS.length;
+  FIXTURES.forEach(f=>{
+    ensureAssignment(f.id);
+    SEATS.forEach(s=>{
+      const st = assignments[f.id][s];
+      recovered += seatRecoveredValue(s, st);
+      if(st.status==='attending' || st.status==='guest') used++;
+    });
+  });
+  const net = outlay - recovered;
+  document.getElementById('statOutlay').textContent = fmtMoney(outlay);
+  document.getElementById('statRecovered').textContent = fmtMoney(recovered);
+  const netEl = document.getElementById('statNet');
+  netEl.textContent = fmtMoney(net);
+  netEl.className = 'value mono ' + (net < outlay*0.5 ? 'pos' : '');
+  document.getElementById('statUsed').textContent = used + ' / ' + total;
+}
+
+function renderNextFixture(){
+  const now = new Date();
+  const upcoming = FIXTURES.filter(f=>fixtureDate(f) >= now).sort((a,b)=>fixtureDate(a)-fixtureDate(b));
+  const card = document.getElementById('nextCard');
+  if(!upcoming.length){
+    document.getElementById('nfOpp').textContent = 'Season complete';
+    document.getElementById('nfMeta').textContent = 'See you back in August';
+    document.getElementById('nfCountdown').textContent = '—';
+    return;
+  }
+  const f = upcoming[0];
+  const ko = settings.kickoffs[f.id] || 'TBC';
+  const provText = PROVISIONAL_KO_IDS.has(f.id) ? ' (provisional)' : '';
+  document.getElementById('nfOpp').textContent = 'City vs ' + f.opp;
+  document.getElementById('nfMeta').textContent = fixtureDate(f).toLocaleDateString('en-GB',{weekday:'long', day:'numeric', month:'long'}) + ' · KO ' + ko + provText;
+  const days = Math.ceil((fixtureDate(f)-now)/(1000*60*60*24));
+  document.getElementById('nfCountdown').textContent = days<=0 ? 'Today' : days+' day'+(days===1?'':'s');
+}
+
+/* ================= RENDER: LIST ================= */
+function passesFilter(f){
+  const st = assignments[f.id];
+  if(currentFilter==='all') return true;
+  if(currentFilter==='upcoming') return !isPast(f);
+  if(currentFilter==='forsale') return SEATS.some(s=>st[s].status==='listed');
+  if(currentFilter==='action') return SEATS.some(s=>st[s].status==='pending') && !isPast(f);
+  return true;
+}
+
+function renderList(){
+  const container = document.getElementById('fixtureList');
+  container.innerHTML = '';
+  FIXTURES.filter(passesFilter).forEach(f=>{
+    ensureAssignment(f.id);
+    const st = assignments[f.id];
+    const div = document.createElement('div');
+    div.className = 'fixture' + (isPast(f) ? ' past':'');
+    div.onclick = ()=>openFixture(f.id);
+    const ko = settings.kickoffs[f.id] || 'TBC';
+    const netVal = fixtureNetValue(f.id);
+    const score = getScore(f.id);
+    const metaLine = score
+      ? `<span class="score-tag">FT ${score}</span>`
+      : `KO ${ko}${PROVISIONAL_KO_IDS.has(f.id) ? '<span class="prov-tag">Prov.</span>' : ''}`;
+    div.innerHTML = `
+      <div class="frow-top">
+        <div class="fdate">
+          <div class="dow">${dow(f)}</div>
+          <div class="dnum">${dnum(f)}</div>
+          <div class="mon">${mon(f)}</div>
+        </div>
+        <div class="fmid">
+          <div class="fopp">City v ${f.opp} ${f.rivalry ? '<span class="rivalry">Big game</span>':''}</div>
+          <div class="fmeta">${metaLine}</div>
+        </div>
+        <div class="fnet">${netVal>0 ? '+'+fmtMoney(netVal) : ''}</div>
+      </div>
+      <div class="seats-full">
+        ${SEATS.map(s=>`
+          <div class="seat-col">
+            <div class="seat-initials">${SEAT_INITIALS[s]}</div>
+            <div class="seat-chip ${STATUS_META[st[s].status].color}" title="${s}: ${STATUS_META[st[s].status].label}">${STATUS_META[st[s].status].code}</div>
+          </div>`).join('')}
+      </div>
+    `;
+    container.appendChild(div);
+  });
+  if(!container.children.length){
+    container.innerHTML = '<p style="text-align:center;color:var(--ink-soft);font-size:13px;padding:30px 0;">No fixtures match this filter.</p>';
+  }
+}
+
+function daysBetween(isoDate){
+  const then = new Date(isoDate+'T00:00:00');
+  const now = new Date();
+  return Math.floor((now - then) / (1000*60*60*24));
+}
+
+function renderFreshnessBar(){
+  const bar = document.getElementById('freshnessBar');
+  const fixtureDays = daysBetween(settings.fixtureDataCheckedOn);
+  const fxDays = daysBetween(settings.fxRateSetDate);
+  const fixtureStale = fixtureDays > 14;
+  const fxStale = fxDays > 365;
+
+  const fixtureCheckedStr = new Date(settings.fixtureDataCheckedOn+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  const fxSetStr = new Date(settings.fxRateSetDate+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+
+  bar.innerHTML = `
+    <span class="freshness-pill ${fixtureStale?'stale':''}" title="Fixtures, kick-off times and results checked against mancity.com">
+      <span class="fp-dot"></span>Fixtures &amp; results checked ${fixtureCheckedStr}${fixtureStale ? ' — due a re-check' : ''}
+    </span>
+    <span class="freshness-pill ${fxStale?'stale':''}" title="GBP to EUR rate, set once a year">
+      <span class="fp-dot"></span>FX rate (£1 = €${settings.fxRate}) set ${fxSetStr}${fxStale ? ' — due its annual refresh' : ''}
+    </span>
+    <button type="button" class="check-updates-btn" onclick="openFixtureUpdateFlow()">🔄 Check for fixture updates</button>
+  `;
+}
+
+/* ================= FIXTURE UPDATE WORKFLOW (separate from ticket data) =================
+   This file can't fetch mancity.com itself — browsers don't allow a static page to pull
+   data from another site like that, whether it's viewed live in Claude or opened as a
+   plain download. So this one modal covers both halves of the real workflow:
+     1. Run the mcfc-fixture-update skill in a Claude chat (button copies the prompt +
+        opens mancity.com for a quick manual look meanwhile).
+     2. Paste or upload the small JSON file that comes back.
+   Applying it only ever patches settings.fixtureOverrides / settings.kickoffs — it never
+   touches assignments (seat status, sold/transferred, prices), so there's no risk to
+   ticket data, unlike replacing the whole app file. */
+function openFixtureUpdateFlow(){
+  const modal = document.getElementById('fixtureImportModal');
+  modal.innerHTML = `
+    <div class="modal-head">
+      <div>
+        <h2>Check for fixture updates</h2>
+        <div class="mh-meta">Patches dates, kick-offs &amp; results only — never touches ticket/seat data</div>
+      </div>
+      <button class="close-x" onclick="closeFixtureImport()">✕</button>
+    </div>
+
+    <div class="settings-section">
+      <h3>1. Run the check</h3>
+      <p style="font-size:12px;color:var(--ink-soft);margin:0 0 8px;">Copies a prompt for the <span class="mono">mcfc-fixture-update</span> skill and opens mancity.com for a quick look now. Paste the prompt into a Claude chat — it'll hand you back a small JSON file.</p>
+      <button type="button" class="backup-btn" onclick="checkForUpdates()">📋 Copy prompt &amp; open mancity.com</button>
+    </div>
+
+    <div class="settings-section">
+      <h3>2. Apply what it finds</h3>
+      <p style="font-size:12px;color:var(--ink-soft);margin:0 0 8px;">Upload the file Claude gives you, or paste its contents below.</p>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
+        <button type="button" class="backup-btn" onclick="document.getElementById('fixtureUpdateFileInput').click()">⬆ Upload file</button>
+        <input type="file" id="fixtureUpdateFileInput" accept="application/json,.json" style="display:none;" onchange="loadFixtureUpdateFile(this.files[0])">
+      </div>
+      <textarea id="fixtureImportText" rows="6" style="width:100%; font-family:'JetBrains Mono',monospace; font-size:12px; border:1px solid var(--line); border-radius:8px; padding:10px; resize:vertical;" placeholder='{"checkedOn":"2026-08-08","updates":{"f7":{"date":"2026-12-03","kickoff":"20:00"},"f1":{"score":"3-1"}}}'></textarea>
+      <p id="fixtureImportStatus" style="font-size:11.5px;color:var(--ink-soft);margin:8px 0 0;"></p>
+    </div>
+
+    <div class="modal-footer">
+      <button class="save-btn" onclick="applyFixtureImport()">Apply update</button>
+    </div>
+  `;
+  document.getElementById('fixtureImportOverlay').classList.add('show');
+}
+function closeFixtureImport(){
+  document.getElementById('fixtureImportOverlay').classList.remove('show');
+}
+function loadFixtureUpdateFile(file){
+  if(!file) return;
+  const statusEl = document.getElementById('fixtureImportStatus');
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    document.getElementById('fixtureImportText').value = reader.result;
+    if(statusEl) statusEl.textContent = `Loaded ${file.name} — review below, then Apply.`;
+  };
+  reader.onerror = ()=>{ if(statusEl) statusEl.textContent = 'Could not read that file.'; };
+  reader.readAsText(file);
+}
+
+// Copies a prompt naming the mcfc-fixture-update skill directly, and opens the official
+// fixtures page for a quick manual look while Claude does the real check.
+function checkForUpdates(){
+  const prompt = `Run my mcfc-fixture-update skill to check for Manchester City ${settings.seasonLabel} fixture changes and results since ${settings.fixtureDataCheckedOn}.`;
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(prompt).catch(()=>{});
+  }
+  window.open('https://www.mancity.com/fixtures/mens', '_blank');
+  showToast('Prompt copied — paste into a Claude chat');
+}
+
+function applyFixtureImport(){
+  const statusEl = document.getElementById('fixtureImportStatus');
+  const raw = document.getElementById('fixtureImportText').value.trim();
+  let parsed;
+  try{
+    parsed = JSON.parse(raw);
+  }catch(e){
+    statusEl.textContent = 'That isn\'t valid JSON — check it was copied in full and try again.';
+    return;
+  }
+  if(!parsed || typeof parsed !== 'object' || !parsed.updates || typeof parsed.updates !== 'object'){
+    statusEl.textContent = 'Unrecognised format — expecting {"checkedOn":"...", "updates":{...}}.';
+    return;
+  }
+  const validIds = new Set(FIXTURES.map(f=>f.id));
+  let applied = 0, skipped = 0;
+  Object.keys(parsed.updates).forEach(fid=>{
+    if(!validIds.has(fid)){ skipped++; return; }
+    const patch = parsed.updates[fid] || {};
+    if(patch.date){
+      settings.fixtureOverrides[fid] = Object.assign({}, settings.fixtureOverrides[fid], {date: patch.date});
+    }
+    if(patch.score){
+      settings.fixtureOverrides[fid] = Object.assign({}, settings.fixtureOverrides[fid], {score: patch.score});
+    }
+    if(patch.kickoff){
+      settings.kickoffs[fid] = patch.kickoff;
+    }
+    applied++;
+  });
+  if(parsed.checkedOn){
+    settings.fixtureDataCheckedOn = parsed.checkedOn;
+  } else {
+    settings.fixtureDataCheckedOn = new Date().toISOString().slice(0,10);
+  }
+  saveSettings();
+  render();
+  closeFixtureImport();
+  showToast(`Fixture update applied — ${applied} fixture${applied===1?'':'s'} updated${skipped?`, ${skipped} skipped`:''}`);
+}
+
+function computeAccessStats(){
+  const futureTotal = FIXTURES.filter(f=>!isPast(f)).length;
+  const stats = {};
+  SEATS.forEach(s=>{
+    let pastCount = 0, futureCount = 0;
+    FIXTURES.forEach(f=>{
+      ensureAssignment(f.id);
+      const st = assignments[f.id][s];
+      const counts = COUNTS_TOWARD_ACCESS.has(st.status);
+      if(isPast(f)){ if(counts) pastCount++; }
+      else { if(counts) futureCount++; }
+    });
+    const total = pastCount + futureCount;
+    const remainingGames = futureTotal; // games left to be played this season
+    const needed = Math.max(0, settings.minPhoneUses - total); // more uses still required
+    const buffer = remainingGames - needed; // spare games once the requirement is covered
+    stats[s] = { total, remainingGames, needed, buffer };
+  });
+  return stats;
+}
+
+function renderAccessTracker(){
+  document.getElementById('accessThresholdVal').textContent = settings.minPhoneUses;
+  const grid = document.getElementById('accessGrid');
+  const stats = computeAccessStats();
+  grid.innerHTML = SEATS.map(s=>{
+    const {total, buffer} = stats[s];
+    const threshold = settings.minPhoneUses;
+    const pct = Math.min(100, Math.round((total/threshold)*100));
+    let statusClass, statusLabel;
+    if(total >= threshold){ statusClass='met'; statusLabel='Target met'; }
+    else if(buffer < 0){ statusClass='off'; statusLabel='Off track'; }
+    else if(buffer <= 1){ statusClass='risk'; statusLabel='At risk'; }
+    else { statusClass='ontrack'; statusLabel='On track'; }
+    const barClass = statusClass==='met' ? 'met' : (statusClass==='off' ? 'off' : (statusClass==='risk' ? 'risk' : ''));
+    return `
+      <div class="access-card">
+        <div class="ac-name">${s} <span class="ac-count">${total}/${threshold}</span></div>
+        <div class="ac-bar"><div class="ac-bar-fill ${barClass}" style="width:${pct}%"></div></div>
+        <div class="ac-status ${statusClass}">${statusLabel}</div>
+      </div>`;
+  }).join('');
+}
+
+function render(){
+  const sub = document.getElementById('headerSubtitle');
+  if(sub) sub.textContent = `${settings.seasonLabel} · ${FIXTURES.length} home fixtures · Etihad Stadium`;
+  renderStats();
+  renderNextFixture();
+  renderFreshnessBar();
+  renderAccessTracker();
+  renderList();
+}
+
+/* ================= PRINT: FULL SEASON ON ONE A4 PAGE ================= */
+function buildPrintView(){
+  const outlay = SEATS.reduce((sum,s)=>sum+settings.seatCost[s],0);
+  let recovered = 0;
+  FIXTURES.forEach(f=>{ ensureAssignment(f.id); SEATS.forEach(s=>{ recovered += seatRecoveredValue(s, assignments[f.id][s]); }); });
+  const net = outlay - recovered;
+  const accessStats = computeAccessStats();
+  const threshold = settings.minPhoneUses;
+  const printedOn = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+
+  const accessRows = SEATS.map(s=>{
+    const {total, buffer} = accessStats[s];
+    let tier;
+    if(total >= threshold) tier = 'Target met';
+    else if(buffer < 0) tier = 'Off track';
+    else if(buffer <= 1) tier = 'At risk';
+    else tier = 'On track';
+    return `<tr><td>${s} (${SEAT_INITIALS[s]})</td><td>${total} / ${threshold}</td><td>${tier}</td></tr>`;
+  }).join('');
+
+  const fixtureRows = FIXTURES.map(f=>{
+    ensureAssignment(f.id);
+    const st = assignments[f.id];
+    const ko = settings.kickoffs[f.id] || 'TBC';
+    const scoreVal = getScore(f.id);
+    const koCell = scoreVal ? `FT ${scoreVal}` : ko;
+    const dateStr = fixtureDate(f).toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
+    const netVal = fixtureNetValue(f.id);
+    const statusCells = SEATS.map(s=>{
+      const code = STATUS_META[st[s].status].code;
+      const cls = STATUS_META[st[s].status].color;
+      return `<td class="pv-status-cell ${cls}">${code}</td>`;
+    }).join('');
+    return `<tr>
+      <td>${dateStr}</td>
+      <td class="pv-opp">${f.opp}${f.rivalry ? ' <span class="pv-rivalry">★</span>' : ''}</td>
+      <td>${koCell}</td>
+      ${statusCells}
+      <td style="text-align:right;">${netVal>0 ? fmtMoney(netVal) : '—'}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('printView').innerHTML = `
+    <div class="pv-header">
+      <h1>Manchester City FC — Season Tickets ${settings.seasonLabel}</h1>
+      <div class="pv-meta">Block 031 · Etihad Stadium<br>Printed ${printedOn}</div>
+    </div>
+
+    <div class="pv-section-title">Match access — minimum ${threshold} uses per ticket</div>
+    <table class="pv-access-table">
+      <tr><th>Seat holder</th><th>Uses</th><th>Status</th></tr>
+      ${accessRows}
+    </table>
+
+    <div class="pv-section-title">All 19 home fixtures</div>
+    <table class="pv-fixtures-table">
+      <colgroup>
+        <col class="pv-col-date"><col class="pv-col-opp"><col class="pv-col-ko">
+        <col class="pv-col-seat"><col class="pv-col-seat"><col class="pv-col-seat"><col class="pv-col-seat">
+        <col class="pv-col-net">
+      </colgroup>
+      <thead><tr>
+        <th>Date</th><th>Opponent</th><th>KO</th>
+        <th>${SEAT_INITIALS.Neil}</th><th>${SEAT_INITIALS.Sam}</th><th>${SEAT_INITIALS.Maia}</th><th>${SEAT_INITIALS.Sarah}</th>
+        <th style="text-align:right;">Net</th>
+      </tr></thead>
+      <tbody>${fixtureRows}</tbody>
+    </table>
+    <div class="pv-legend">★ big game &nbsp;·&nbsp; PEND pending · ATTN attending · GUES guest · LIST listed (club exchange) · SOLD sold privately · UNUS unused · EXCH sold via exchange · XFER transferred</div>
+
+    <div class="pv-footer">
+      <div class="pv-foot-item">Total outlay<strong>${fmtMoney(outlay)}</strong></div>
+      <div class="pv-foot-item">Recovered<strong>${fmtMoney(recovered)}</strong></div>
+      <div class="pv-foot-item">Net cost<strong>${fmtMoney(net)}</strong></div>
+      <div class="pv-foot-item">FX rate<strong>£1 = €${settings.fxRate}</strong></div>
+    </div>
+  `;
+}
+
+function printSeason(){
+  buildPrintView();
+  setTimeout(()=>window.print(), 50); // let the print view paint before invoking the dialog
+}
+
+/* ================= FIXTURE MODAL ================= */
+function openFixture(fid){
+  openFixtureId = fid;
+  bulkSelectedSeats.clear();
+  bulkStatus = 'attending';
+  const f = FIXTURES.find(x=>x.id===fid);
+  ensureAssignment(fid);
+  const modal = document.getElementById('fixtureModal');
+  const ko = settings.kickoffs[fid] || 'TBC';
+
+  modal.innerHTML = `
+    <div class="modal-head">
+      <div>
+        <h2>City v ${f.opp}</h2>
+        <div class="mh-meta">${fixtureDate(f).toLocaleDateString('en-GB',{weekday:'long', day:'numeric', month:'long', year:'numeric'})}</div>
+      </div>
+      <button class="close-x" onclick="closeFixture()">✕</button>
+    </div>
+    <div class="kickoff-row">
+      <label>Kick-off</label>
+      <input type="text" id="koInput" value="${ko}" placeholder="e.g. 15:00 or TBC" style="width:100px;">
+      ${PROVISIONAL_KO_IDS.has(fid)
+        ? '<span class="prov-tag">Provisional</span>'
+        : '<span class="prov-tag" style="color:var(--green);background:var(--green-bg);">Confirmed</span>'}
+    </div>
+    <div class="mh-meta" style="margin-top:-12px;margin-bottom:14px;">Source: mancity.com/fixtures/mens</div>
+
+    <div class="bulk-toggle-row">
+      <label><input type="checkbox" id="selectAllSeats" onchange="toggleSelectAll(this.checked)"> Select multiple seats to apply the same status at once</label>
+    </div>
+    <div class="bulk-bar" id="bulkBar" style="display:none;"></div>
+
+    <div id="seatCards"></div>
+    <div class="modal-footer">
+      <button class="save-btn" onclick="saveFixture()">Save</button>
+    </div>
+  `;
+
+  const seatCards = modal.querySelector('#seatCards');
+  SEATS.forEach(s=>{
+    const st = assignments[fid][s];
+    const card = document.createElement('div');
+    card.className = 'seat-card';
+    card.innerHTML = `
+      <div class="sc-head">
+        <div class="sc-holder">
+          <input type="checkbox" class="bulk-select" data-seat="${s}" onchange="toggleBulkSeat('${s}', this.checked)">
+          <span class="dot ${STATUS_META[st.status].color}" style="width:10px;height:10px;"></span>${s} <span class="sc-seatno">${SEAT_NUMBERS[s]}</span>
+        </div>
+      </div>
+      <select class="status-select" data-seat="${s}" data-field="status" onchange="onStatusChange('${s}')">
+        ${Object.keys(STATUS_META).map(k=>`<option value="${k}" ${st.status===k?'selected':''}>${STATUS_META[k].label}</option>`).join('')}
+      </select>
+      <div class="extra-fields-wrap" data-seat-extra="${s}"></div>
+    `;
+    seatCards.appendChild(card);
+    renderExtraFields(s, st);
+  });
+
+  document.getElementById('fixtureOverlay').classList.add('show');
+}
+
+function toggleBulkSeat(seat, checked){
+  if(checked) bulkSelectedSeats.add(seat); else bulkSelectedSeats.delete(seat);
+  const cb = document.querySelector(`input.bulk-select[data-seat="${seat}"]`);
+  const card = cb ? cb.closest('.seat-card') : null;
+  if(card) card.classList.toggle('bulk-active', checked);
+  updateBulkBar();
+}
+
+function toggleSelectAll(checked){
+  SEATS.forEach(s=>{
+    if(checked) bulkSelectedSeats.add(s); else bulkSelectedSeats.delete(s);
+    const cb = document.querySelector(`input.bulk-select[data-seat="${s}"]`);
+    if(cb) cb.checked = checked;
+    const card = cb ? cb.closest('.seat-card') : null;
+    if(card) card.classList.toggle('bulk-active', checked);
+  });
+  updateBulkBar();
+}
+
+function clearBulkSelection(){
+  bulkSelectedSeats.clear();
+  document.querySelectorAll('input.bulk-select').forEach(cb=>{
+    cb.checked = false;
+    const card = cb.closest('.seat-card');
+    if(card) card.classList.remove('bulk-active');
+  });
+  const selectAll = document.getElementById('selectAllSeats');
+  if(selectAll) selectAll.checked = false;
+  updateBulkBar();
+}
+
+function updateBulkBar(){
+  const bar = document.getElementById('bulkBar');
+  if(!bar) return;
+  const n = bulkSelectedSeats.size;
+  if(n === 0){ bar.style.display = 'none'; return; }
+  bar.style.display = 'block';
+  bar.innerHTML = `
+    <div class="bulk-bar-head">
+      <strong>${n} seat${n>1?'s':''} selected</strong>
+      <button type="button" onclick="clearBulkSelection()">Clear</button>
+    </div>
+    <select id="bulkStatusSelect" class="status-select" onchange="onBulkStatusChange()">
+      ${Object.keys(STATUS_META).map(k=>`<option value="${k}" ${bulkStatus===k?'selected':''}>${STATUS_META[k].label}</option>`).join('')}
+    </select>
+    <div id="bulkFieldsWrap"></div>
+    <button type="button" class="bulk-apply-btn" onclick="applyBulk()">Apply to ${n} seat${n>1?'s':''}</button>
+  `;
+  renderBulkFields();
+}
+
+function renderBulkFields(){
+  const wrap = document.getElementById('bulkFieldsWrap');
+  if(!wrap) return;
+  if(bulkStatus==='guest'){
+    wrap.innerHTML = `
+      <div class="extra-fields" style="margin-top:8px;">
+        <div><span class="field-label">Guest name</span><input type="text" id="bulk-guestName"></div>
+        <div><span class="field-label">Fee, if any (€)</span><input type="number" id="bulk-amount" placeholder="Blank = free"></div>
+      </div>`;
+  } else if(bulkStatus==='sold'){
+    wrap.innerHTML = `
+      <div class="extra-fields" style="margin-top:8px;">
+        <div><span class="field-label">Ticket type</span>
+          <select id="bulk-ticketType">
+            <option value="adult">Adult</option><option value="child">Child</option><option value="student">Student</option>
+          </select>
+        </div>
+        <div><span class="field-label">Price basis</span>
+          <select id="bulk-priceBasis">
+            <option value="fnf">Friends &amp; Family</option><option value="eur">Standard (EUR)</option><option value="gbp">Standard (GBP, converted)</option>
+          </select>
+        </div>
+      </div>
+      <div class="extra-fields single" style="margin-top:8px;">
+        <div><span class="field-label">Buyer</span><input type="text" id="bulk-buyerName"></div>
+      </div>
+      <div class="suggest" style="margin-top:8px;">Each seat's price is calculated automatically from the ticket type &amp; basis above — fine-tune individual amounts afterwards if needed.</div>`;
+  } else if(bulkStatus==='transferred'){
+    wrap.innerHTML = `
+      <div class="extra-fields" style="margin-top:8px;">
+        <div><span class="field-label">Transferred to</span><input type="text" id="bulk-recipientName"></div>
+        <div><span class="field-label">Fee, if any (€)</span><input type="number" id="bulk-amount" placeholder="Blank = free"></div>
+      </div>`;
+  } else if(bulkStatus==='exchanged'){
+    wrap.innerHTML = `<div class="suggest" style="margin-top:8px;">Each seat recovers its own 1/19th season-price value automatically — no entry needed.</div>`;
+  } else if(bulkStatus==='listed'){
+    wrap.innerHTML = `<div class="suggest" style="margin-top:8px;">The club sets the price — no entry needed here.</div>`;
+  } else {
+    wrap.innerHTML = '';
+  }
+}
+
+function onBulkStatusChange(){
+  bulkStatus = document.getElementById('bulkStatusSelect').value;
+  renderBulkFields();
+}
+
+function applyBulk(){
+  const fid = openFixtureId;
+  const n = bulkSelectedSeats.size;
+  if(n===0) return;
+
+  const buyerName     = document.getElementById('bulk-buyerName')    ? document.getElementById('bulk-buyerName').value : '';
+  const recipientName = document.getElementById('bulk-recipientName')? document.getElementById('bulk-recipientName').value : '';
+  const guestName      = document.getElementById('bulk-guestName')    ? document.getElementById('bulk-guestName').value : '';
+  const sharedFee      = document.getElementById('bulk-amount')       ? document.getElementById('bulk-amount').value : '';
+  const ticketType      = document.getElementById('bulk-ticketType')   ? document.getElementById('bulk-ticketType').value : 'adult';
+  const priceBasis       = document.getElementById('bulk-priceBasis')   ? document.getElementById('bulk-priceBasis').value : 'fnf';
+
+  bulkSelectedSeats.forEach(seat=>{
+    const st = assignments[fid][seat];
+    st.status = bulkStatus;
+    if(bulkStatus==='guest'){
+      st.guestName = guestName;
+      st.amount = sharedFee;
+    } else if(bulkStatus==='sold'){
+      st.ticketType = ticketType;
+      st.priceBasis = priceBasis;
+      st.buyerName = buyerName;
+      st.amount = Math.round(computeSuggestedPrice(ticketType, priceBasis)); // default pricing, applied per seat
+    } else if(bulkStatus==='transferred'){
+      st.recipientName = recipientName;
+      st.amount = sharedFee;
+    }
+    // attending / pending / listed / unused / exchanged need no extra fields — automatic or none
+  });
+
+  showToast(`Applied to ${n} seat${n>1?'s':''}`);
+  openFixture(fid); // rebuild the modal so every card reflects the bulk change
+}
+
+function pricingFieldsHTML(seat, st){
+  const suggested = computeSuggestedPrice(st.ticketType||'adult', st.priceBasis||'fnf');
+  return `
+    <div class="extra-fields">
+      <div><span class="field-label">Ticket type</span>
+        <select data-seat="${seat}" data-field="ticketType" onchange="onPricingChange('${seat}')">
+          <option value="adult" ${st.ticketType==='adult'?'selected':''}>Adult</option>
+          <option value="child" ${st.ticketType==='child'?'selected':''}>Child</option>
+          <option value="student" ${st.ticketType==='student'?'selected':''}>Student</option>
+        </select>
+      </div>
+      <div><span class="field-label">Price basis</span>
+        <select data-seat="${seat}" data-field="priceBasis" onchange="onPricingChange('${seat}')">
+          <option value="fnf" ${st.priceBasis==='fnf'?'selected':''}>Friends &amp; Family</option>
+          <option value="eur" ${st.priceBasis==='eur'?'selected':''}>Standard (EUR)</option>
+          <option value="gbp" ${st.priceBasis==='gbp'?'selected':''}>Standard (GBP, converted)</option>
+        </select>
+      </div>
+    </div>
+    <div class="suggest" id="suggest-${seat}">Suggested price: <strong>${fmtMoney(suggested)}</strong>
+      <button type="button" class="use-suggested" data-seat="${seat}" onclick="useSuggested('${seat}')">Use this</button>
+    </div>`;
+}
+
+function renderExtraFields(seat, st){
+  const wrap = document.querySelector(`[data-seat-extra="${seat}"]`);
+  const pgv = perGameValue(seat);
+
+  if(st.status==='guest'){
+    wrap.innerHTML = `
+      <div class="extra-fields">
+        <div><span class="field-label">Guest name</span><input type="text" data-seat="${seat}" data-field="guestName" value="${st.guestName||''}"></div>
+        <div><span class="field-label">Fee, if any (€)</span><input type="number" data-seat="${seat}" data-field="amount" value="${st.amount||''}" placeholder="Blank = free"></div>
+      </div>`;
+
+  } else if(st.status==='sold'){
+    wrap.innerHTML = pricingFieldsHTML(seat, st) + `
+      <div class="extra-fields" style="margin-top:8px;">
+        <div><span class="field-label">Buyer</span><input type="text" data-seat="${seat}" data-field="buyerName" value="${st.buyerName||''}"></div>
+        <div><span class="field-label">Amount received (€)</span><input type="number" id="amount-${seat}" data-seat="${seat}" data-field="amount" value="${st.amount||''}"></div>
+      </div>`;
+
+  } else if(st.status==='listed'){
+    wrap.innerHTML = `
+      <div class="suggest" style="margin-top:0;">On the club exchange — the club sets the price, not you. If it sells you'll receive <strong>${fmtMoney(pgv)}</strong> (1/19th of this seat's season price).</div>
+      <div class="extra-fields single" style="margin-top:8px;">
+        <div><span class="field-label">Note</span><input type="text" data-seat="${seat}" data-field="note" value="${st.note||''}" placeholder="Optional"></div>
+      </div>
+      <div style="margin-top:10px; display:flex; gap:8px;">
+        <button type="button" class="use-suggested" data-seat="${seat}" onclick="resolveListed('${seat}','exchanged')">Mark sold (Exchanged)</button>
+        <button type="button" class="use-suggested" data-seat="${seat}" onclick="resolveListed('${seat}','unused')">Mark unsold (Unused)</button>
+      </div>`;
+
+  } else if(st.status==='transferred'){
+    wrap.innerHTML = `
+      <div class="extra-fields">
+        <div><span class="field-label">Transferred to</span><input type="text" data-seat="${seat}" data-field="recipientName" value="${st.recipientName||''}" placeholder="Name on their Man City account"></div>
+        <div><span class="field-label">Fee, if any (€)</span><input type="number" data-seat="${seat}" data-field="amount" value="${st.amount||''}" placeholder="Blank = free"></div>
+      </div>
+      <div class="extra-fields single" style="margin-top:8px;">
+        <div><span class="field-label">Note</span><input type="text" data-seat="${seat}" data-field="note" value="${st.note||''}"></div>
+      </div>`;
+
+  } else if(st.status==='exchanged'){
+    wrap.innerHTML = `
+      <div class="suggest" style="margin-top:0;">Sold via the club exchange. Recovered automatically: <strong>${fmtMoney(pgv)}</strong> (1/19th of this seat's season price).</div>`;
+
+  } else if(st.status==='unused'){
+    wrap.innerHTML = `
+      <div class="suggest" style="margin-top:0; color:var(--coral);">No revenue recovered — this ticket went to waste.</div>`;
+
+  } else {
+    wrap.innerHTML = '';
+  }
+}
+
+function resolveListed(seat, newStatus){
+  const fid = openFixtureId;
+  assignments[fid][seat].status = newStatus;
+  const select = document.querySelector(`select[data-seat="${seat}"][data-field="status"]`);
+  if(select) select.value = newStatus;
+  renderExtraFields(seat, assignments[fid][seat]);
+  // refresh the little status dot next to the seat name
+  const card = select ? select.closest('.seat-card') : null;
+  if(card){
+    const d = card.querySelector('.sc-holder .dot');
+    if(d) d.className = 'dot ' + STATUS_META[newStatus].color;
+  }
+}
+
+function onPricingChange(seat){
+  const fid = openFixtureId;
+  const st = assignments[fid][seat];
+  st.ticketType = document.querySelector(`select[data-seat="${seat}"][data-field="ticketType"]`).value;
+  st.priceBasis = document.querySelector(`select[data-seat="${seat}"][data-field="priceBasis"]`).value;
+  const suggested = computeSuggestedPrice(st.ticketType, st.priceBasis);
+  const suggestEl = document.getElementById(`suggest-${seat}`);
+  if(suggestEl){
+    suggestEl.innerHTML = `Suggested price: <strong>${fmtMoney(suggested)}</strong>
+      <button type="button" class="use-suggested" data-seat="${seat}" onclick="useSuggested('${seat}')">Use this</button>`;
+  }
+}
+function useSuggested(seat){
+  const fid = openFixtureId;
+  const st = assignments[fid][seat];
+  const suggested = computeSuggestedPrice(st.ticketType||'adult', st.priceBasis||'fnf');
+  const amountInput = document.getElementById(`amount-${seat}`);
+  if(amountInput) amountInput.value = Math.round(suggested);
+}
+
+function onStatusChange(seat){
+  const fid = openFixtureId;
+  const select = document.querySelector(`select[data-seat="${seat}"][data-field="status"]`);
+  assignments[fid][seat].status = select.value;
+  renderExtraFields(seat, assignments[fid][seat]);
+  const card = select.closest('.seat-card');
+  if(card){
+    const dot = card.querySelector('.sc-holder .dot');
+    if(dot) dot.className = 'dot ' + STATUS_META[select.value].color;
+  }
+}
+
+function saveFixture(){
+  const fid = openFixtureId;
+  settings.kickoffs[fid] = document.getElementById('koInput').value || 'TBC';
+  document.querySelectorAll('#seatCards [data-seat][data-field]').forEach(el=>{
+    const seat = el.dataset.seat, field = el.dataset.field;
+    if(seat && field) assignments[fid][seat][field] = el.value;
+  });
+  saveSettings();
+  saveAssignments();
+  closeFixture();
+  render();
+  showToast('Saved');
+}
+
+function closeFixture(){
+  document.getElementById('fixtureOverlay').classList.remove('show');
+  openFixtureId = null;
+}
+
+/* ================= SETTINGS MODAL ================= */
+function openSettings(){
+  const modal = document.getElementById('settingsModal');
+  modal.innerHTML = `
+    <div class="modal-head">
+      <h2>Settings</h2>
+      <button class="close-x" onclick="closeSettings()">✕</button>
+    </div>
+
+    <div class="settings-section" style="display:flex; justify-content:space-between; align-items:center;">
+      <span style="font-size:12px; color:var(--ink-soft);">Manchester City FC Season Tickets · <span class="mono">v${APP_VERSION}</span></span>
+      <button type="button" class="backup-btn" onclick="openChangelog()">📋 View changelog</button>
+    </div>
+
+    <div class="settings-section">
+      <h3>Seat holders &amp; annual cost (€)</h3>
+      <div class="settings-grid">
+        ${SEATS.map(s=>`<div><label>${s} — ${SEAT_NUMBERS[s]}</label><input type="number" id="cost-${s}" value="${settings.seatCost[s]}"></div>`).join('')}
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3>Games this season</h3>
+      <div class="settings-grid">
+        <div><label>Total home games</label><input type="number" id="totalGames" value="${settings.totalGames}"></div>
+        <div><label>Min. phone uses per ticket</label><input type="number" id="minPhoneUses" value="${settings.minPhoneUses}"></div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3>Exchange rate — set once a year</h3>
+      <div class="settings-grid">
+        <div><label>GBP → EUR rate</label><input type="number" step="0.0001" id="fxRate" value="${settings.fxRate}"></div>
+        <div><label>Rate set on</label><input type="date" id="fxRateSetDate" value="${settings.fxRateSetDate}"></div>
+      </div>
+      <p style="font-size:11.5px;color:var(--ink-soft);margin:8px 0 0;">Currently set to £1 = €${settings.fxRate}, dated ${new Date(settings.fxRateSetDate+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}. This app can't fetch a live rate itself — check today's mid-market rate (e.g. xe.com) and update both fields together once a year, or ask Claude to look it up for you.</p>
+    </div>
+
+    <div class="settings-section">
+      <h3>Resale price guide</h3>
+      <table class="price-table">
+        <tr><th></th><th>GBP</th><th>EUR</th><th>Friends &amp; Family (€)</th></tr>
+        ${['adult','child','student'].map(cat=>`
+          <tr>
+            <td style="text-transform:capitalize;">${cat}</td>
+            <td><input type="number" id="price-${cat}-gbp" value="${settings.resale[cat].gbp}"></td>
+            <td><input type="number" id="price-${cat}-eur" value="${settings.resale[cat].eur}"></td>
+            <td><input type="number" id="price-${cat}-fnf" value="${settings.resale[cat].fnf}"></td>
+          </tr>`).join('')}
+      </table>
+    </div>
+
+    <div class="settings-section">
+      <h3>Season</h3>
+      <div class="settings-grid">
+        <div><label>Season label</label><input type="text" id="seasonLabel" value="${settings.seasonLabel}"></div>
+      </div>
+      <p style="font-size:11.5px;color:var(--ink-soft);margin:8px 0 0;">Shown in the header and on printouts. Change it when the season rolls over.</p>
+    </div>
+
+    <div class="settings-section">
+      <h3>Cloud sync</h3>
+      ${cloudEnabled() ? `
+        <p style="font-size:11.5px;color:var(--ink-soft);margin:0 0 8px;">This device is syncing to gist <span class="mono">${cloudGistId()}</span>. Changes push automatically; the latest copy is pulled every time the app opens.</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button type="button" class="backup-btn" onclick="cloudPull({})">⬇ Pull now</button>
+          <button type="button" class="backup-btn" onclick="cloudPush({})">⬆ Push now</button>
+          <button type="button" class="backup-btn" onclick="copyGistId()">⧉ Copy gist ID</button>
+          <button type="button" class="backup-btn" onclick="cloudDisconnect()">✕ Disconnect this device</button>
+        </div>
+      ` : `
+        <p style="font-size:11.5px;color:var(--ink-soft);margin:0 0 8px;">Keeps one shared copy of your season data in a secret GitHub gist, so the same data appears on every device. Needs a GitHub personal access token with <strong>Gists: read and write</strong>. The token is stored in this browser only and is never put in the gist or in a backup file.</p>
+        <div class="settings-grid">
+          <div><label>GitHub token</label><input type="password" id="ghTokenInput" placeholder="github_pat_… or ghp_…" autocomplete="off"></div>
+          <div><label>Existing gist ID (leave blank on first device)</label><input type="text" id="gistIdInput" placeholder="e.g. 3f9a…" autocomplete="off"></div>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
+          <button type="button" class="backup-btn" onclick="cloudCreateGist()">☁ Create gist &amp; upload this device's data</button>
+          <button type="button" class="backup-btn" onclick="cloudConnectExisting()">🔗 Connect to existing gist</button>
+        </div>
+      `}
+      <p id="syncStatus" style="font-size:11.5px;color:var(--ink-soft);margin:8px 0 0;"></p>
+    </div>
+
+    <div class="settings-section">
+      <h3>Backup</h3>
+      <p style="font-size:11.5px;color:var(--ink-soft);margin:0 0 8px;">Especially worth doing since data lives in this browser only (see footer) — a backup file protects you if you clear browser data or switch device.</p>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button type="button" class="backup-btn" onclick="exportBackup()">⬇ Export backup</button>
+        <button type="button" class="backup-btn" onclick="document.getElementById('importFileInput').click()">⬆ Import backup</button>
+        <input type="file" id="importFileInput" accept="application/json,.json" style="display:none;" onchange="importBackup(this.files[0])">
+      </div>
+      <p id="backupStatus" style="font-size:11.5px;color:var(--ink-soft);margin:8px 0 0;"></p>
+    </div>
+
+    <div class="modal-footer">
+      <button class="save-btn" onclick="saveSettingsModal()">Save settings</button>
+    </div>
+  `;
+  document.getElementById('settingsOverlay').classList.add('show');
+  updateSyncUI();
+}
+function saveSettingsModal(){
+  settings.seasonLabel = (document.getElementById('seasonLabel').value||'').trim() || settings.seasonLabel;
+  SEATS.forEach(s=>{ settings.seatCost[s] = Number(document.getElementById(`cost-${s}`).value)||0; });
+  settings.totalGames = Number(document.getElementById('totalGames').value)||19;
+  settings.minPhoneUses = Number(document.getElementById('minPhoneUses').value)||10;
+  settings.fxRate = Number(document.getElementById('fxRate').value)||settings.fxRate;
+  settings.fxRateSetDate = document.getElementById('fxRateSetDate').value || settings.fxRateSetDate;
+  ['adult','child','student'].forEach(cat=>{
+    settings.resale[cat].gbp = Number(document.getElementById(`price-${cat}-gbp`).value)||0;
+    settings.resale[cat].eur = Number(document.getElementById(`price-${cat}-eur`).value)||0;
+    settings.resale[cat].fnf = Number(document.getElementById(`price-${cat}-fnf`).value)||0;
+  });
+  saveSettings();
+  closeSettings();
+  render();
+  showToast('Settings saved');
+}
+function closeSettings(){
+  document.getElementById('settingsOverlay').classList.remove('show');
+}
+
+/* ================= CHANGELOG VIEWER ================= */
+function openChangelog(){
+  const modal = document.getElementById('changelogModal');
+  modal.innerHTML = `
+    <div class="modal-head">
+      <div>
+        <h2>Changelog</h2>
+        <div class="mh-meta">Currently running v${APP_VERSION}</div>
+      </div>
+      <button class="close-x" onclick="closeChangelog()">✕</button>
+    </div>
+    <div class="cl-list">
+      ${CHANGELOG.map(entry=>`
+        <div class="cl-entry">
+          <div class="cl-entry-head"><strong>v${entry.version}</strong><span>${entry.date}</span></div>
+          <ul>${entry.notes.map(n=>`<li>${n}</li>`).join('')}</ul>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  document.getElementById('changelogOverlay').classList.add('show');
+}
+function closeChangelog(){
+  document.getElementById('changelogOverlay').classList.remove('show');
+}
+
+/* ================= BACKUP: EXPORT / IMPORT ================= */
+function exportBackup(){
+  const payload = {
+    app: 'mancity-season-tickets',
+    season: settings.seasonLabel,
+    appVersion: APP_VERSION,
+    exportedAt: new Date().toISOString(),
+    settings: settings,
+    assignments: assignments
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const dateStr = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `mancity-tickets-backup-${dateStr}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  const statusEl = document.getElementById('backupStatus');
+  if(statusEl) statusEl.textContent = `Exported ${dateStr}.`;
+  showToast('Backup downloaded');
+}
+
+function importBackup(file){
+  if(!file) return;
+  const statusEl = document.getElementById('backupStatus');
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    let parsed;
+    try{
+      parsed = JSON.parse(reader.result);
+    }catch(e){
+      if(statusEl) statusEl.textContent = 'That file isn\'t valid backup JSON — import cancelled.';
+      showToast('Import failed — invalid file');
+      return;
+    }
+    if(!parsed || typeof parsed !== 'object' || !parsed.settings || !parsed.assignments){
+      if(statusEl) statusEl.textContent = 'That file doesn\'t look like a season-ticket backup — import cancelled.';
+      showToast('Import failed — unrecognised file');
+      return;
+    }
+    const exportedAt = parsed.exportedAt ? new Date(parsed.exportedAt).toLocaleString('en-GB') : 'an unknown date';
+    const ok = confirm(`Import backup from ${exportedAt}?\n\nThis replaces all current seat statuses and settings in this browser. This can't be undone.`);
+    if(!ok){
+      if(statusEl) statusEl.textContent = 'Import cancelled.';
+      return;
+    }
+    settings = mergeSettings(parsed.settings);
+    assignments = mergeAssignments(parsed.assignments);
+    saveSettings();
+    saveAssignments();
+    render();
+    closeSettings();
+    if(statusEl) statusEl.textContent = `Imported backup from ${exportedAt}.`;
+    showToast('Backup imported');
+  };
+  reader.onerror = ()=>{ showToast('Could not read that file'); };
+  reader.readAsText(file);
+}
+
+/* ================= FILTER TABS ================= */
+document.querySelectorAll('.tab').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    renderList();
+  });
+});
+
+document.getElementById('fixtureOverlay').addEventListener('click', e=>{
+  if(e.target.id==='fixtureOverlay') closeFixture();
+});
+document.getElementById('settingsOverlay').addEventListener('click', e=>{
+  if(e.target.id==='settingsOverlay') closeSettings();
+});
+document.getElementById('changelogOverlay').addEventListener('click', e=>{
+  if(e.target.id==='changelogOverlay') closeChangelog();
+});
+document.getElementById('fixtureImportOverlay').addEventListener('click', e=>{
+  if(e.target.id==='fixtureImportOverlay') closeFixtureImport();
+});
+
+document.getElementById('appVersion').textContent = 'v' + APP_VERSION;
+
+// Reopening the app on a phone often resumes the tab rather than reloading it,
+// so refresh from the cloud whenever it comes back to the foreground. If a push
+// is still pending, send that first instead — the local change is the newer one.
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState !== 'visible' || !cloudEnabled() || cloudBusy) return;
+  if(cloudPushTimer){ clearTimeout(cloudPushTimer); cloudPushTimer = null; cloudPush({silent:true}); }
+  else cloudPull({silent:true});
+});
+
+loadData().then(()=>{
+  updateSyncUI();
+  if(cloudEnabled()) cloudPull({silent:true});
+});
+</script>
+</body>
+</html>
