@@ -364,6 +364,25 @@
   .pv-footer{display:flex; justify-content:space-between; margin-top:16px; padding-top:9px; border-top:2px solid #101C33; font-size:12px;}
   .pv-footer .pv-foot-item strong{font-family:'JetBrains Mono',monospace; font-size:15px; display:block; margin-top:2px;}
   .pv-legend{font-size:9.5px; color:#5B6B80; margin-top:9px; line-height:1.5;}
+
+  /* ---------- Available-tickets flyer (portrait, for external sharing) ---------- */
+  .av-header{background:#101C33; color:#fff; padding:22px 26px; border-radius:14px; margin-bottom:22px;}
+  .av-header .av-eyebrow{font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:#6CABDD; font-weight:700; margin:0 0 4px;}
+  .av-header h1{font-family:'Teko',sans-serif; font-size:34px; font-weight:700; margin:0; line-height:1;}
+  .av-header .av-sub{font-size:12.5px; color:#B9C6D9; margin-top:6px;}
+  .av-fixture{border:1px solid #D8DFE7; border-left:5px solid #6CABDD; border-radius:10px; padding:13px 16px; margin-bottom:11px; display:flex; justify-content:space-between; align-items:center; break-inside:avoid;}
+  .av-fixture .av-f-left .av-f-date{font-size:11px; text-transform:uppercase; letter-spacing:0.04em; color:#5B6B80; font-weight:700;}
+  .av-fixture .av-f-left .av-f-opp{font-family:'Teko',sans-serif; font-size:24px; font-weight:600; color:#101C33; line-height:1.15; margin-top:1px;}
+  .av-fixture .av-f-left .av-f-opp .av-rivalry{color:#D9544B;}
+  .av-fixture .av-f-left .av-f-ko{font-size:11.5px; color:#5B6B80; margin-top:2px;}
+  .av-fixture .av-f-right{text-align:right; white-space:nowrap; padding-left:14px;}
+  .av-fixture .av-count{font-family:'Teko',sans-serif; font-size:26px; font-weight:700; color:#3E86C4; line-height:1;}
+  .av-fixture .av-count-label{font-size:9.5px; text-transform:uppercase; letter-spacing:0.04em; color:#5B6B80;}
+  .av-cta{background:#EEF6FC; border:2px solid #6CABDD; border-radius:14px; padding:20px 22px; margin-top:20px; text-align:center;}
+  .av-cta .av-cta-line{font-size:15px; color:#142032; margin:0 0 6px;}
+  .av-cta .av-cta-phone{font-family:'Teko',sans-serif; font-size:38px; font-weight:700; color:#101C33; letter-spacing:0.02em;}
+  .av-empty{padding:30px; text-align:center; color:#5B6B80; font-size:14px; border:1px dashed #D8DFE7; border-radius:12px;}
+  .av-footer{margin-top:22px; padding-top:10px; border-top:1px solid #D8DFE7; font-size:10px; color:#9AA6B2; text-align:center;}
 </style>
 </head>
 <body>
@@ -379,6 +398,7 @@
       <div style="display:flex; gap:6px;">
         <button class="settings-btn" onclick="openSettings()">⚙ Settings</button>
         <button class="settings-btn" onclick="printSeason()">🖶 Print</button>
+        <button class="settings-btn" onclick="printAvailable()">📄 Share available</button>
       </div>
       <span class="version-tag" id="appVersion"></span>
     </div>
@@ -473,6 +493,11 @@
    instead of a comment that drifts out of sync with the real thing.
    ===================================================================== */
 const CHANGELOG = [
+  {version:'1.18.0', date:'2026-08-22', notes:[
+    'Contacts directory. Settings → Contacts — save the people you regularly give tickets to (name + phone). They sync via the same gist as everything else, so the list follows you across devices.',
+    'Contact tagging. On any Guest, Sold or Transferred ticket, pick a saved contact from a dropdown and it fills the name field for you — still editable, and a one-off name typed by hand works exactly as before.',
+    'Available-tickets PDF. New "Share available" button (header, next to Print) builds a portrait flyer listing every fixture with a Pending ticket and how many are free, plus a call-to-action with your phone number for people to text. Uses the browser\'s print dialog — choose "Save as PDF" as the destination. Set your number once in Settings → Sharing.'
+  ]},
   {version:'1.17.1', date:'2026-08-22', notes:[
     'Added a web app manifest and icons, so "Add to Home Screen" now installs a real standalone app (own icon, launches full-screen, no browser address bar) instead of just a bookmarked tab. Needs manifest.json and the three icon files sitting alongside index.html in the repo.'
   ]},
@@ -626,7 +651,11 @@ const DEFAULT_SETTINGS = {
   // score, applied via "Import fixture update" without ever touching seat/ticket data or
   // requiring a new copy of the app. Keyed by fixture id: { date?: 'YYYY-MM-DD', score?: '3-1' }
   fixtureOverrides: {},
-  fixtureDataCheckedOn: FIXTURE_DATA_VERIFIED // bumped by "Import fixture update"; independent of app version
+  fixtureDataCheckedOn: FIXTURE_DATA_VERIFIED, // bumped by "Import fixture update"; independent of app version
+  // Reference directory for tagging who a Guest/Sold/Transferred ticket actually
+  // went to, and the number shown on the "available tickets" PDF for people to text.
+  contacts: [], // [{id, name, phone}]
+  reservationPhone: ''
 };
 
 const STATUS_META = {
@@ -660,7 +689,7 @@ let bulkStatus = 'attending';
 function defaultSeatState(){
   return {
     status:'pending', guestName:'', buyerName:'', recipientName:'', amount:'', note:'',
-    ticketType:'adult', priceBasis:'fnf'
+    ticketType:'adult', priceBasis:'fnf', contactId:''
   };
 }
 function ensureAssignment(fid){
@@ -1418,6 +1447,62 @@ function printSeason(){
   setTimeout(()=>window.print(), 50); // let the print view paint before invoking the dialog
 }
 
+// "Available" means Pending — a seat holder hasn't claimed it for that fixture yet.
+// Deliberately doesn't say whose seat it is; that's internal detail nobody outside
+// the family needs, and keeps the flyer simple to scan.
+function buildAvailablePrintView(){
+  const printedOn = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const availableFixtures = FIXTURES
+    .map(f=>{
+      ensureAssignment(f.id);
+      const count = SEATS.filter(s=>assignments[f.id][s].status==='pending').length;
+      return {f, count};
+    })
+    .filter(x=>x.count>0)
+    .sort((a,b)=>fixtureDate(a.f)-fixtureDate(b.f));
+
+  const rowsHTML = availableFixtures.map(({f,count})=>{
+    const ko = settings.kickoffs[f.id] || 'Kick-off TBC';
+    const dateStr = fixtureDate(f).toLocaleDateString('en-GB',{weekday:'short', day:'numeric', month:'long'});
+    return `
+      <div class="av-fixture">
+        <div class="av-f-left">
+          <div class="av-f-date">${dateStr}</div>
+          <div class="av-f-opp">Man City v ${f.opp}${f.rivalry?' <span class="av-rivalry">★</span>':''}</div>
+          <div class="av-f-ko">${ko} · Etihad Stadium</div>
+        </div>
+        <div class="av-f-right">
+          <div class="av-count">${count}</div>
+          <div class="av-count-label">${count===1?'ticket':'tickets'} free</div>
+        </div>
+      </div>`;
+  }).join('');
+
+  const phone = settings.reservationPhone || '(add your number in Settings → Sharing)';
+
+  document.getElementById('printView').innerHTML = `
+    <div class="av-header">
+      <p class="av-eyebrow">Manchester City FC · ${settings.seasonLabel}</p>
+      <h1>Tickets available</h1>
+      <div class="av-sub">Colin Bell Stand · Etihad Stadium · as of ${printedOn}</div>
+    </div>
+
+    ${rowsHTML || `<div class="av-empty">No tickets currently available — check back closer to the next fixture.</div>`}
+
+    <div class="av-cta">
+      <p class="av-cta-line">Want one? Text me to reserve — first come, first served.</p>
+      <div class="av-cta-phone">${phone}</div>
+    </div>
+
+    <div class="av-footer">Generated from the season ticket tracker · ${printedOn}</div>
+  `;
+}
+
+function printAvailable(){
+  buildAvailablePrintView();
+  setTimeout(()=>window.print(), 50);
+}
+
 /* ================= FIXTURE MODAL ================= */
 function openFixture(fid){
   openFixtureId = fid;
@@ -1636,6 +1721,29 @@ function pricingFieldsHTML(seat, st){
     </div>`;
 }
 
+// Contact picker used wherever a ticket goes to a named person (Guest/Sold/Transferred).
+// Picking a saved contact auto-fills the adjacent name field but leaves it editable —
+// the free-text field always wins at save time, the contactId is just a tag for later.
+function contactPickerHTML(seat, nameField){
+  const st = assignments[openFixtureId][seat];
+  const options = (settings.contacts||[]).map(c=>
+    `<option value="${c.id}" ${st.contactId===c.id?'selected':''}>${c.name}${c.phone?' · '+c.phone:''}</option>`
+  ).join('');
+  return `<div><span class="field-label">Contact</span>
+    <select data-seat="${seat}" data-field="contactId" onchange="onContactPick('${seat}','${nameField}')">
+      <option value="">— not saved as a contact —</option>
+      ${options}
+    </select>
+  </div>`;
+}
+function onContactPick(seat, nameField){
+  const select = document.querySelector(`select[data-seat="${seat}"][data-field="contactId"]`);
+  const nameInput = document.querySelector(`[data-seat="${seat}"][data-field="${nameField}"]`);
+  if(!select || !nameInput) return;
+  const contact = (settings.contacts||[]).find(c=>c.id===select.value);
+  if(contact) nameInput.value = contact.name;
+}
+
 function renderExtraFields(seat, st){
   const wrap = document.querySelector(`[data-seat-extra="${seat}"]`);
   const pgv = perGameValue(seat);
@@ -1643,14 +1751,20 @@ function renderExtraFields(seat, st){
   if(st.status==='guest'){
     wrap.innerHTML = `
       <div class="extra-fields">
+        ${contactPickerHTML(seat,'guestName')}
         <div><span class="field-label">Guest name</span><input type="text" data-seat="${seat}" data-field="guestName" value="${st.guestName||''}"></div>
+      </div>
+      <div class="extra-fields single" style="margin-top:8px;">
         <div><span class="field-label">Fee, if any (€)</span><input type="number" data-seat="${seat}" data-field="amount" value="${st.amount||''}" placeholder="Blank = free"></div>
       </div>`;
 
   } else if(st.status==='sold'){
     wrap.innerHTML = pricingFieldsHTML(seat, st) + `
       <div class="extra-fields" style="margin-top:8px;">
+        ${contactPickerHTML(seat,'buyerName')}
         <div><span class="field-label">Buyer</span><input type="text" data-seat="${seat}" data-field="buyerName" value="${st.buyerName||''}"></div>
+      </div>
+      <div class="extra-fields single" style="margin-top:8px;">
         <div><span class="field-label">Amount received (€)</span><input type="number" id="amount-${seat}" data-seat="${seat}" data-field="amount" value="${st.amount||''}"></div>
       </div>`;
 
@@ -1668,10 +1782,11 @@ function renderExtraFields(seat, st){
   } else if(st.status==='transferred'){
     wrap.innerHTML = `
       <div class="extra-fields">
+        ${contactPickerHTML(seat,'recipientName')}
         <div><span class="field-label">Transferred to</span><input type="text" data-seat="${seat}" data-field="recipientName" value="${st.recipientName||''}" placeholder="Name on their Man City account"></div>
-        <div><span class="field-label">Fee, if any (€)</span><input type="number" data-seat="${seat}" data-field="amount" value="${st.amount||''}" placeholder="Blank = free"></div>
       </div>
-      <div class="extra-fields single" style="margin-top:8px;">
+      <div class="extra-fields" style="margin-top:8px;">
+        <div><span class="field-label">Fee, if any (€)</span><input type="number" data-seat="${seat}" data-field="amount" value="${st.amount||''}" placeholder="Blank = free"></div>
         <div><span class="field-label">Note</span><input type="text" data-seat="${seat}" data-field="note" value="${st.note||''}"></div>
       </div>`;
 
@@ -1754,6 +1869,40 @@ function closeFixture(){
 }
 
 /* ================= SETTINGS MODAL ================= */
+/* ================= CONTACTS ================= */
+function newContactId(){ return 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function renderContactsListHTML(){
+  const contacts = settings.contacts || [];
+  if(!contacts.length) return `<p style="font-size:12px;color:var(--ink-soft);margin:0 0 4px;">No contacts saved yet.</p>`;
+  return `<div style="display:flex; flex-direction:column; gap:6px; margin-bottom:4px;">
+    ${contacts.map(c=>`
+      <div style="display:flex; justify-content:space-between; align-items:center; border:1px solid var(--line); border-radius:8px; padding:7px 10px; font-size:13px;">
+        <span>${c.name}${c.phone?` <span style="color:var(--ink-soft);">· ${c.phone}</span>`:''}</span>
+        <button type="button" class="close-x" style="font-size:13px;" onclick="removeContact('${c.id}')">✕</button>
+      </div>`).join('')}
+  </div>`;
+}
+function addContact(){
+  const name = (document.getElementById('newContactName').value||'').trim();
+  const phone = (document.getElementById('newContactPhone').value||'').trim();
+  if(!name){ showToast('Enter a name first'); return; }
+  if(!settings.contacts) settings.contacts = [];
+  settings.contacts.push({id:newContactId(), name, phone});
+  saveSettings();
+  document.getElementById('contactsList').innerHTML = renderContactsListHTML();
+  document.getElementById('newContactName').value = '';
+  document.getElementById('newContactPhone').value = '';
+  showToast('Contact added');
+}
+function removeContact(id){
+  const c = (settings.contacts||[]).find(c=>c.id===id);
+  if(c && !confirm(`Remove ${c.name} from contacts? Tickets already tagged with them keep the name typed at the time, they just won't be linked to this contact any more.`)) return;
+  settings.contacts = (settings.contacts||[]).filter(c=>c.id!==id);
+  saveSettings();
+  document.getElementById('contactsList').innerHTML = renderContactsListHTML();
+  showToast('Contact removed');
+}
+
 function openSettings(){
   const modal = document.getElementById('settingsModal');
   modal.innerHTML = `
@@ -1838,6 +1987,25 @@ function openSettings(){
     </div>
 
     <div class="settings-section">
+      <h3>Contacts</h3>
+      <p style="font-size:11.5px;color:var(--ink-soft);margin:0 0 8px;">People you regularly give a Guest, Sold or Transferred ticket to. Once saved here, pick them from a dropdown on any ticket instead of retyping the name — and this list syncs with the rest of your data.</p>
+      <div id="contactsList">${renderContactsListHTML()}</div>
+      <div class="extra-fields" style="margin-top:8px;">
+        <div><span class="field-label">Name</span><input type="text" id="newContactName" placeholder="e.g. Dave Whelan"></div>
+        <div><span class="field-label">Phone</span><input type="text" id="newContactPhone" placeholder="e.g. 087 123 4567"></div>
+      </div>
+      <button type="button" class="backup-btn" style="margin-top:8px;" onclick="addContact()">＋ Add contact</button>
+    </div>
+
+    <div class="settings-section">
+      <h3>Sharing</h3>
+      <div class="settings-grid">
+        <div><label>Your phone number (shown on the available-tickets PDF)</label><input type="text" id="reservationPhone" value="${settings.reservationPhone||''}" placeholder="e.g. 087 123 4567"></div>
+      </div>
+      <p style="font-size:11.5px;color:var(--ink-soft);margin:8px 0 0;">"Generate available-tickets PDF" (top of the app, next to Print) lists every fixture with a Pending ticket and tells people to text this number to reserve one.</p>
+    </div>
+
+    <div class="settings-section">
       <h3>Backup</h3>
       <p style="font-size:11.5px;color:var(--ink-soft);margin:0 0 8px;">Especially worth doing since data lives in this browser only (see footer) — a backup file protects you if you clear browser data or switch device.</p>
       <div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -1862,6 +2030,7 @@ function saveSettingsModal(){
   settings.minPhoneUses = Number(document.getElementById('minPhoneUses').value)||10;
   settings.fxRate = Number(document.getElementById('fxRate').value)||settings.fxRate;
   settings.fxRateSetDate = document.getElementById('fxRateSetDate').value || settings.fxRateSetDate;
+  settings.reservationPhone = (document.getElementById('reservationPhone').value||'').trim();
   ['adult','child','student'].forEach(cat=>{
     settings.resale[cat].gbp = Number(document.getElementById(`price-${cat}-gbp`).value)||0;
     settings.resale[cat].eur = Number(document.getElementById(`price-${cat}-eur`).value)||0;
