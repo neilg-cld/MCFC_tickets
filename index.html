@@ -493,6 +493,9 @@
    instead of a comment that drifts out of sync with the real thing.
    ===================================================================== */
 const CHANGELOG = [
+  {version:'1.18.1', date:'2026-08-22', notes:[
+    'Contacts → "Pick from device" button pulls name and number straight from your phone\'s native contacts app (Android Chrome/Edge only — the browser API this relies on doesn\'t exist on iOS Safari or any desktop browser, so the button only appears where it\'ll actually work). Duplicates already in your list are skipped automatically.'
+  ]},
   {version:'1.18.0', date:'2026-08-22', notes:[
     'Contacts directory. Settings → Contacts — save the people you regularly give tickets to (name + phone). They sync via the same gist as everything else, so the list follows you across devices.',
     'Contact tagging. On any Guest, Sold or Transferred ticket, pick a saved contact from a dropdown and it fills the name field for you — still editable, and a one-off name typed by hand works exactly as before.',
@@ -1903,6 +1906,50 @@ function removeContact(id){
   showToast('Contact removed');
 }
 
+// Contact Picker API — lets the app read directly from the phone's native contacts
+// app rather than retyping. Supported on Chrome/Edge for Android only; Safari/iOS
+// and every desktop browser have no equivalent, so the button is hidden there and
+// manual entry (above) is the only route.
+function contactPickerSupported(){
+  return typeof navigator !== 'undefined' && 'contacts' in navigator && 'ContactsManager' in window;
+}
+function initDevicePickButton(){
+  const btn = document.getElementById('pickDeviceBtn');
+  const hint = document.getElementById('pickContactsHint');
+  if(!btn || !hint) return;
+  if(contactPickerSupported()){
+    btn.style.display = '';
+    hint.textContent = '';
+  }else{
+    btn.style.display = 'none';
+    hint.textContent = 'Picking from your phone\'s contacts isn\'t available in this browser (Android Chrome/Edge only) — add manually above.';
+  }
+}
+async function pickDeviceContacts(){
+  if(!contactPickerSupported()){ showToast('Not supported in this browser'); return; }
+  try{
+    const picked = await navigator.contacts.select(['name','tel'], {multiple:true});
+    if(!picked || !picked.length){ return; }
+    if(!settings.contacts) settings.contacts = [];
+    let added = 0, skipped = 0;
+    picked.forEach(p=>{
+      const name = (p.name && p.name[0]) ? p.name[0].trim() : '';
+      const phone = (p.tel && p.tel[0]) ? p.tel[0].trim() : '';
+      if(!name){ skipped++; return; }
+      const dupe = settings.contacts.some(c=>c.name.toLowerCase()===name.toLowerCase() && c.phone===phone);
+      if(dupe){ skipped++; return; }
+      settings.contacts.push({id:newContactId(), name, phone});
+      added++;
+    });
+    saveSettings();
+    document.getElementById('contactsList').innerHTML = renderContactsListHTML();
+    showToast(added ? `Added ${added} contact${added>1?'s':''}${skipped?` · ${skipped} skipped (already saved)`:''}` : 'No new contacts added');
+  }catch(e){
+    // User cancelled the picker, or the browser refused (must be a direct tap, HTTPS required).
+    if(e && e.name !== 'AbortError') showToast('Could not read contacts — ' + e.message);
+  }
+}
+
 function openSettings(){
   const modal = document.getElementById('settingsModal');
   modal.innerHTML = `
@@ -1994,7 +2041,11 @@ function openSettings(){
         <div><span class="field-label">Name</span><input type="text" id="newContactName" placeholder="e.g. Dave Whelan"></div>
         <div><span class="field-label">Phone</span><input type="text" id="newContactPhone" placeholder="e.g. 087 123 4567"></div>
       </div>
-      <button type="button" class="backup-btn" style="margin-top:8px;" onclick="addContact()">＋ Add contact</button>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
+        <button type="button" class="backup-btn" onclick="addContact()">＋ Add contact</button>
+        <button type="button" class="backup-btn" id="pickDeviceBtn" onclick="pickDeviceContacts()" style="display:none;">📱 Pick from device</button>
+      </div>
+      <p id="pickContactsHint" style="font-size:11px;color:var(--ink-soft);margin:6px 0 0;"></p>
     </div>
 
     <div class="settings-section">
@@ -2022,6 +2073,7 @@ function openSettings(){
   `;
   document.getElementById('settingsOverlay').classList.add('show');
   updateSyncUI();
+  initDevicePickButton();
 }
 function saveSettingsModal(){
   settings.seasonLabel = (document.getElementById('seasonLabel').value||'').trim() || settings.seasonLabel;
