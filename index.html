@@ -541,7 +541,10 @@
    instead of a comment that drifts out of sync with the real thing.
    ===================================================================== */
 const CHANGELOG = [
-  {version:'1.21.1', date:'2026-08-23', notes:[
+  {version:'1.23.0', date:'2026-08-23', notes:[
+    'Availability flyer CTA simplified to "Message me privately to reserve your tickets".'
+  ]},
+  {version:'1.22.0', date:'2026-08-23', notes:[
     'Kick-off badges now spell out "Confirmed" / "Provisional" everywhere (list, next-fixture card, availability flyer) instead of "Conf." / "Prov." \u2014 the fixture detail modal already did this, the rest now match.'
   ]},
   {version:'1.21.0', date:'2026-08-23', notes:[
@@ -1851,7 +1854,7 @@ function buildAvailablePrintView(){
     ${rowsHTML ? `<div class="av-grid">${rowsHTML}</div>` : `<div class="av-empty">No tickets currently available — check back closer to the next fixture.</div>`}
 
     <div class="av-cta">
-      <p class="av-cta-line">Want one? Message me privately to reserve — I'll confirm in the group chat.</p>
+      <p class="av-cta-line">Message me privately to reserve your tickets</p>
       <div class="av-cta-phone">${phone}</div>
     </div>
 
