@@ -171,15 +171,19 @@
 
   /* status colors */
   .c-pending{background:var(--grey-bg); border:1px dashed #C3CCD6; color:#7C8A9A;}
-  .c-attending{background:#DCEBF9; color:#1D5A8C;}
-  .c-guest{background:var(--violet-bg); color:#5747B8;}
-  .c-listed{background:var(--amber-bg); color:#A9670F;}
-  .c-sold{background:var(--green-bg); color:#1F6B41;}
-  .c-unused{background:var(--grey-bg); color:#6B7684;}
-  .c-exchanged{background:#DEF3F6; color:#2A7E8F;}
-  .c-transferred{background:#F6E9C8; color:#8C6A11;}
+  .c-attending{background:#CFF3DC; color:#0C7A3C;}
+  .c-guest{background:#E7E0FE; color:#5B35E0;}
+  .c-listed{background:#FDE7C4; color:#B4670A;}
+  .c-sold{background:#C7F0E8; color:#0A7A66;}
+  .c-unused{background:var(--grey-bg); color:#63707E;}
+  .c-exchanged{background:#C7EDFB; color:#0B7BA6;}
+  .c-transferred{background:#FBE1A3; color:#8A5900;}
   .prov-tag{
     font-size:9.5px; color:var(--amber); background:var(--amber-bg); border-radius:5px;
+    padding:1px 5px; margin-left:5px; font-weight:600; text-transform:uppercase; letter-spacing:0.03em;
+  }
+  .conf-tag{
+    font-size:9.5px; color:#0C7A3C; background:#CFF3DC; border-radius:5px;
     padding:1px 5px; margin-left:5px; font-weight:600; text-transform:uppercase; letter-spacing:0.03em;
   }
   .score-tag{
@@ -366,26 +370,70 @@
   .pv-legend{font-size:9.5px; color:#5B6B80; margin-top:9px; line-height:1.5;}
 
   /* ---------- Available-tickets flyer (portrait, for external sharing) ---------- */
-  .av-header{background:#101C33; color:#fff; padding:22px 26px; border-radius:14px; margin-bottom:22px;}
-  .av-header .av-eyebrow{font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:#6CABDD; font-weight:700; margin:0 0 4px;}
-  .av-header h1{font-family:'Teko',sans-serif; font-size:34px; font-weight:700; margin:0; line-height:1;}
-  .av-header .av-sub{font-size:12.5px; color:#B9C6D9; margin-top:6px;}
-  .av-fixture{border:1px solid #D8DFE7; border-left:5px solid #6CABDD; border-radius:10px; padding:13px 16px; margin-bottom:11px; display:flex; justify-content:space-between; align-items:center; break-inside:avoid;}
-  .av-fixture .av-f-left .av-f-date{font-size:11px; text-transform:uppercase; letter-spacing:0.04em; color:#5B6B80; font-weight:700;}
-  .av-fixture .av-f-left .av-f-opp{font-family:'Teko',sans-serif; font-size:24px; font-weight:600; color:#101C33; line-height:1.15; margin-top:1px;}
+  .av-slim-header{display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid #101C33; padding-bottom:6px; margin-bottom:12px;}
+  .av-slim-title{font-family:'Teko',sans-serif; font-size:22px; font-weight:700; color:#101C33; letter-spacing:0.01em;}
+  .av-slim-meta{font-size:10px; color:#5B6B80;}
+  .av-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px 10px;}
+  .av-fixture{border:1px solid #D8DFE7; border-left:4px solid #6CABDD; border-radius:8px; padding:7px 10px; display:flex; justify-content:space-between; align-items:center; break-inside:avoid;}
+  .av-fixture .av-f-left .av-f-date{font-size:9px; text-transform:uppercase; letter-spacing:0.04em; color:#5B6B80; font-weight:700;}
+  .av-fixture .av-f-left .av-f-opp{font-family:'Teko',sans-serif; font-size:17px; font-weight:600; color:#101C33; line-height:1.1; margin-top:1px;}
   .av-fixture .av-f-left .av-f-opp .av-rivalry{color:#D9544B;}
-  .av-fixture .av-f-left .av-f-ko{font-size:11.5px; color:#5B6B80; margin-top:2px;}
-  .av-fixture .av-f-right{text-align:right; white-space:nowrap; padding-left:14px;}
-  .av-fixture .av-count{font-family:'Teko',sans-serif; font-size:26px; font-weight:700; color:#3E86C4; line-height:1;}
-  .av-fixture .av-count-label{font-size:9.5px; text-transform:uppercase; letter-spacing:0.04em; color:#5B6B80;}
-  .av-cta{background:#EEF6FC; border:2px solid #6CABDD; border-radius:14px; padding:20px 22px; margin-top:20px; text-align:center;}
-  .av-cta .av-cta-line{font-size:15px; color:#142032; margin:0 0 6px;}
-  .av-cta .av-cta-phone{font-family:'Teko',sans-serif; font-size:38px; font-weight:700; color:#101C33; letter-spacing:0.02em;}
-  .av-empty{padding:30px; text-align:center; color:#5B6B80; font-size:14px; border:1px dashed #D8DFE7; border-radius:12px;}
-  .av-footer{margin-top:22px; padding-top:10px; border-top:1px solid #D8DFE7; font-size:10px; color:#9AA6B2; text-align:center;}
+  .av-fixture .av-f-left .av-f-ko{font-size:9.5px; color:#5B6B80; margin-top:1px;}
+  .av-conf, .av-prov{
+    font-size:8px; border-radius:4px; padding:0px 4px; margin-left:3px; font-weight:700;
+    text-transform:uppercase; letter-spacing:0.03em; vertical-align:1px;
+  }
+  .av-conf{color:#0C7A3C; background:#CFF3DC;}
+  .av-prov{color:#A9670F; background:#FDE9C7;}
+  .av-fixture .av-f-right{text-align:right; white-space:nowrap; padding-left:10px;}
+  .av-fixture .av-count{font-family:'Teko',sans-serif; font-size:20px; font-weight:700; color:#3E86C4; line-height:1;}
+  .av-fixture .av-count-label{font-size:7.5px; text-transform:uppercase; letter-spacing:0.03em; color:#5B6B80;}
+  .av-cta{background:#EEF6FC; border:2px solid #6CABDD; border-radius:10px; padding:10px 16px; margin-top:14px; text-align:center;}
+  .av-cta .av-cta-line{font-size:12.5px; color:#142032; margin:0 0 4px;}
+  .av-cta .av-cta-phone{font-family:'Teko',sans-serif; font-size:26px; font-weight:700; color:#101C33; letter-spacing:0.02em;}
+  .av-empty{padding:24px; text-align:center; color:#5B6B80; font-size:13px; border:1px dashed #D8DFE7; border-radius:10px;}
+  .av-footer{margin-top:12px; padding-top:6px; border-top:1px solid #D8DFE7; font-size:8.5px; color:#9AA6B2; text-align:center;}
+
+  /* ---------- App lock (deterrent only — see APP_AUTH_HASH comment in the script) ---------- */
+  body.mcfc-locked > *:not(#lockOverlay){ display:none !important; }
+  body:not(.mcfc-locked) #lockOverlay{ display:none !important; }
+  .lock-overlay{
+    position:fixed; inset:0; z-index:200; background:linear-gradient(160deg, var(--navy), var(--navy-2));
+    display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  .lock-card{
+    background:var(--card); border-radius:18px; padding:32px 26px; width:100%; max-width:340px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.35); text-align:center;
+  }
+  .lock-eyebrow{font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--sky-deep); font-weight:700; margin:0 0 2px;}
+  .lock-title{font-family:'Teko',sans-serif; font-size:32px; font-weight:700; margin:0 0 20px; color:var(--navy);}
+  .lock-field{text-align:left; margin-bottom:12px;}
+  .lock-field label{font-size:12px; color:var(--ink-soft); display:block; margin-bottom:4px;}
+  .lock-field input{width:100%; border:1px solid var(--line); border-radius:9px; padding:10px 12px; font-size:14px; box-sizing:border-box;}
+  .lock-btn{
+    width:100%; background:var(--navy); color:#fff; border:none; border-radius:10px; padding:12px;
+    font-size:14px; font-weight:600; cursor:pointer; margin-top:6px;
+  }
+  .lock-btn:disabled{opacity:0.6; cursor:default;}
+  .lock-btn:hover:not(:disabled){background:var(--navy-2);}
+  .lock-error{color:var(--coral); font-size:12.5px; margin:12px 0 0; min-height:16px;}
 </style>
 </head>
 <body>
+
+<div class="lock-overlay" id="lockOverlay" style="display:none;">
+  <div class="lock-card">
+    <p class="lock-eyebrow">Manchester City FC</p>
+    <h1 class="lock-title">Season Tickets</h1>
+    <div id="lockFormArea">
+      <div class="lock-field"><label>Username</label><input type="text" id="lockUsername" autocomplete="username"></div>
+      <div class="lock-field"><label>Password</label><input type="password" id="lockPassword" autocomplete="current-password"></div>
+      <button type="button" class="lock-btn" id="lockSubmitBtn" onclick="attemptUnlock()">Unlock</button>
+      <p class="lock-error" id="lockError"></p>
+    </div>
+  </div>
+</div>
+
 
 <header class="top">
   <div class="top-row">
@@ -493,6 +541,24 @@
    instead of a comment that drifts out of sync with the real thing.
    ===================================================================== */
 const CHANGELOG = [
+  {version:'1.21.1', date:'2026-08-23', notes:[
+    'Kick-off badges now spell out "Confirmed" / "Provisional" everywhere (list, next-fixture card, availability flyer) instead of "Conf." / "Prov." \u2014 the fixture detail modal already did this, the rest now match.'
+  ]},
+  {version:'1.21.0', date:'2026-08-23', notes:[
+    'Status colours made more vivid throughout. Attending and Sold are now two distinct greens (both count toward your phone-usage quota) rather than blue/green \u2014 easier to tell apart at a glance from Guest, Listed, Exchanged and Transferred.',
+    'Kick-off confirmation is now shown everywhere, not just when provisional \u2014 a "Conf." or "Prov." tag appears on the fixture list, next-fixture card, and fixture detail. This was already tracked internally; it just wasn\'t visible before.',
+    'The fixture-check flow (Settings \u2192 Fixture check) now also asks Claude to report when a provisional kick-off has been confirmed, so this updates automatically going forward rather than needing a manual edit.',
+    'Available-tickets flyer: slim one-line header instead of the big branded block, two-column layout, and tighter spacing throughout \u2014 built to fit a full list on one A4 page. Wording changed from "free" to "available". Each fixture now shows its Conf./Prov. status. The call-to-action now reads "message me privately to reserve \u2014 I\'ll confirm in the group chat" rather than "text me".'
+  ]},
+  {version:'1.20.0', date:'2026-08-22', notes:[
+    'Fixture check now uses your own Anthropic Console API key (Settings \u2192 Fixture check), stored on-device only \u2014 never synced, never in a backup. This also removes the previous artifact-only limitation: the check now works from the phone and GitHub Pages, not just inside a Claude.ai chat. Errors are handled specifically (bad key, exhausted Console credit, rate limits, timeouts) rather than one generic failure, and a cut-off reply is repaired rather than discarded.',
+    'App lock (Settings \u2192 App lock). Generate a username + password right in the app \u2014 it hashes them on-device and gives you a line to paste into the file before redeploying. Deterrent only: this is a public repo, so it stops someone stumbling on the link, not a determined attacker. Off by default; nothing changes until the generated line replaces the blank APP_AUTH_HASH constant and the file is re-uploaded.'
+  ]},
+  {version:'1.19.0', date:'2026-08-22', notes:[
+    'Check for fixture updates → "🔎 Check now" calls the Claude API directly with web search, so mancity.com gets checked and the JSON patch is filled in automatically — no more copying a prompt into a separate chat.',
+    'Environment limit worth knowing: this only works while the file is open inside a Claude.ai artifact panel. On GitHub Pages / the installed home-screen app (i.e. normal daily use), the browser has no credential for the Anthropic API and the call is blocked — the button will say so and point at the original "copy a prompt for a Claude chat" fallback, which still works everywhere and is kept as the primary route for phone use.',
+    'Either route ends the same way: JSON in the review box, nothing applied until you press Apply.'
+  ]},
   {version:'1.18.1', date:'2026-08-22', notes:[
     'Contacts → "Pick from device" button pulls name and number straight from your phone\'s native contacts app (Android Chrome/Edge only — the browser API this relies on doesn\'t exist on iOS Safari or any desktop browser, so the button only appears where it\'ll actually work). Duplicates already in your list are skipped automatically.'
   ]},
@@ -628,6 +694,83 @@ const DEFAULT_KICKOFFS = {
 // Match results baked into this file version (fixture id -> "3-1"). Normally stays empty —
 // results and schedule changes arrive via "Import fixture update" instead (settings.fixtureOverrides),
 // which patches live without needing a new copy of the app. See getScore() below.
+// ===== APP LOCK =====
+// Deterrent only — the app is on a public GitHub repo, so this stops someone stumbling
+// on the link, not a determined attacker with dev tools open. Real protection for the
+// season data itself is that it lives in a gist behind your GitHub token, not in this file.
+//
+// Leave blank to disable the lock entirely (default). To turn it on: open the app,
+// Settings → App lock → enter a username + password → Generate. Copy the line it gives
+// you and paste it here, replacing this const, then re-upload index.html to GitHub.
+const APP_AUTH_HASH = '';
+
+async function sha256Hex(str){
+  const enc = new TextEncoder().encode(str);
+  const buf = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+function authCredentialString(username, password){
+  return (username||'').trim().toLowerCase() + '::' + (password||'');
+}
+
+let lastGeneratedAuthLine = '';
+async function generateAuthHash(){
+  const u = document.getElementById('genUsername').value;
+  const p = document.getElementById('genPassword').value;
+  if(!u.trim() || !p){ showToast('Enter both a username and password'); return; }
+  if(!window.crypto || !window.crypto.subtle){ showToast('Needs https — try this on the live GitHub Pages URL'); return; }
+  const hash = await sha256Hex(authCredentialString(u,p));
+  const line = `const APP_AUTH_HASH = '${hash}';`;
+  lastGeneratedAuthLine = line;
+  const out = document.getElementById('genAuthOutput');
+  out.innerHTML = `
+    <p style="font-size:11.5px;color:var(--ink-soft);margin:10px 0 4px;">Copy this line and paste it over the existing <span class="mono">const APP_AUTH_HASH</span> line near the top of the file (search for "APP LOCK"), then re-upload index.html to GitHub. Do the same on every device once it's live — until then nothing has changed.</p>
+    <textarea id="genAuthLine" readonly style="width:100%; font-family:'JetBrains Mono',monospace; font-size:11.5px; border:1px solid var(--line); border-radius:8px; padding:8px; resize:vertical;" rows="2" onclick="this.select()">${line}</textarea>
+    <button type="button" class="backup-btn" style="margin-top:6px;" onclick="copyGeneratedAuthLine()">⧉ Copy line</button>
+  `;
+}
+function copyGeneratedAuthLine(){
+  if(!lastGeneratedAuthLine) return;
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(lastGeneratedAuthLine).then(()=>showToast('Copied'));
+  }else{
+    const ta = document.getElementById('genAuthLine');
+    if(ta){ ta.select(); document.execCommand('copy'); showToast('Copied'); }
+  }
+}
+
+// Clears this device's unlocked flag and reloads straight into the lock screen —
+// for handing the phone to someone else, or just checking the lock actually works.
+function lockAppNow(){
+  ckPut(CK.unlocked, '');
+  location.reload();
+}
+
+let unlockAttempts = 0;
+async function attemptUnlock(){
+  const btn = document.getElementById('lockSubmitBtn');
+  const err = document.getElementById('lockError');
+  const username = document.getElementById('lockUsername').value;
+  const password = document.getElementById('lockPassword').value;
+  if(!window.crypto || !window.crypto.subtle){
+    err.textContent = 'Can\'t verify here — open this app via its https:// address, not as a local file.';
+    return;
+  }
+  btn.disabled = true;
+  const hash = await sha256Hex(authCredentialString(username, password));
+  if(hash === APP_AUTH_HASH){
+    ckPut(CK.unlocked, APP_AUTH_HASH);
+    document.body.classList.remove('mcfc-locked');
+    err.textContent = '';
+    initApp();
+  }else{
+    unlockAttempts++;
+    err.textContent = 'Incorrect username or password.';
+    const wait = Math.min(unlockAttempts * 700, 3000);
+    setTimeout(()=>{ btn.disabled = false; }, wait);
+  }
+}
+
 const SCORES = {};
 
 // Fixture list + kick-off times + results last checked against mancity.com/fixtures/mens
@@ -680,6 +823,21 @@ const COUNTS_TOWARD_ACCESS = new Set(['attending','guest','sold']);
 const CONFIRMED_KO_IDS = new Set(['f1','f2','f3']);
 // All other home fixtures carry a "date & kick-off time subject to change" flag on mancity.com.
 const PROVISIONAL_KO_IDS = new Set(['f4','f5','f6','f7','f8','f9','f10','f11','f12','f13','f14','f15','f16','f17','f18','f19']);
+
+// Single source of truth for confirmed/provisional — checks a fixture-check patch first
+// (fixtureOverrides.<id>.koStatus), falling back to the build-time sets above. This is
+// what "as best known" means in practice: confirmed only once the club's own site drops
+// its "subject to change" flag, provisional otherwise — never guessed.
+function koStatus(fid){
+  const patch = settings.fixtureOverrides && settings.fixtureOverrides[fid];
+  if(patch && patch.koStatus) return patch.koStatus;
+  return CONFIRMED_KO_IDS.has(fid) ? 'confirmed' : 'provisional';
+}
+function koTagHTML(fid){
+  return koStatus(fid) === 'confirmed'
+    ? '<span class="conf-tag">Confirmed</span>'
+    : '<span class="prov-tag">Provisional</span>';
+}
 
 /* ================= STATE ================= */
 let settings = structuredClone(DEFAULT_SETTINGS);
@@ -823,11 +981,12 @@ async function saveAssignments(){ await persistAssignmentsLocal(); scheduleCloud
    it. Fine for fixture/seat data; don't put anything sensitive in this app. */
 const GIST_FILENAME = 'mancity-season-tickets.json';
 const GH_API = 'https://api.github.com';
-const CK = { token:'mcfc:ghToken', gist:'mcfc:gistId', stamp:'mcfc:remoteStamp', last:'mcfc:lastSync' };
+const CK = { token:'mcfc:ghToken', gist:'mcfc:gistId', stamp:'mcfc:remoteStamp', last:'mcfc:lastSync', anthropicKey:'mcfc:anthropicKey', unlocked:'mcfc:unlocked' };
 
 function ckGet(k){ try{ return localStorage.getItem(k) || ''; }catch(e){ return ''; } }
 function ckPut(k,v){ try{ v ? localStorage.setItem(k,v) : localStorage.removeItem(k); }catch(e){} }
 function cloudToken(){ return ckGet(CK.token); }
+function anthropicKey(){ return ckGet(CK.anthropicKey); }
 function cloudGistId(){ return ckGet(CK.gist); }
 function cloudEnabled(){ return !!(cloudToken() && cloudGistId()); }
 
@@ -1114,9 +1273,9 @@ function renderNextFixture(){
   }
   const f = upcoming[0];
   const ko = settings.kickoffs[f.id] || 'TBC';
-  const provText = PROVISIONAL_KO_IDS.has(f.id) ? ' (provisional)' : '';
+  const koText = koStatus(f.id) === 'confirmed' ? ' (confirmed)' : ' (provisional)';
   document.getElementById('nfOpp').textContent = 'City vs ' + f.opp;
-  document.getElementById('nfMeta').textContent = fixtureDate(f).toLocaleDateString('en-GB',{weekday:'long', day:'numeric', month:'long'}) + ' · KO ' + ko + provText;
+  document.getElementById('nfMeta').textContent = fixtureDate(f).toLocaleDateString('en-GB',{weekday:'long', day:'numeric', month:'long'}) + ' · KO ' + ko + koText;
   const days = Math.ceil((fixtureDate(f)-now)/(1000*60*60*24));
   document.getElementById('nfCountdown').textContent = days<=0 ? 'Today' : days+' day'+(days===1?'':'s');
 }
@@ -1145,7 +1304,7 @@ function renderList(){
     const score = getScore(f.id);
     const metaLine = score
       ? `<span class="score-tag">FT ${score}</span>`
-      : `KO ${ko}${PROVISIONAL_KO_IDS.has(f.id) ? '<span class="prov-tag">Prov.</span>' : ''}`;
+      : `KO ${ko}${koTagHTML(f.id)}`;
     div.innerHTML = `
       <div class="frow-top">
         <div class="fdate">
@@ -1224,13 +1383,24 @@ function openFixtureUpdateFlow(){
 
     <div class="settings-section">
       <h3>1. Run the check</h3>
-      <p style="font-size:12px;color:var(--ink-soft);margin:0 0 8px;">Copies a prompt for the <span class="mono">mcfc-fixture-update</span> skill and opens mancity.com for a quick look now. Paste the prompt into a Claude chat — it'll hand you back a small JSON file.</p>
-      <button type="button" class="backup-btn" onclick="checkForUpdates()">📋 Copy prompt &amp; open mancity.com</button>
+      ${anthropicKey() ? `
+        <p style="font-size:12px;color:var(--ink-soft);margin:0 0 8px;">Asks Claude to search mancity.com directly and fill in the box below — no need to leave the app. It only ever proposes changes; nothing is applied until you review them and click Apply.</p>
+        <button type="button" class="backup-btn" id="apiCheckBtn" onclick="checkForUpdatesViaAPI()">🔎 Check now</button>
+        <button type="button" class="backup-btn" onclick="clearAnthropicKey()">✕ Remove saved key</button>
+      ` : `
+        <p style="font-size:12px;color:var(--ink-soft);margin:0 0 8px;">Paste an Anthropic Console API key (console.anthropic.com → API Keys) to run the check directly from this device, billed to your own Console credit — separate from a Claude subscription. Stored in this browser only, never synced or backed up.</p>
+        <div class="settings-grid">
+          <div><label>Console API key</label><input type="password" id="anthropicKeyInput" placeholder="sk-ant-…" autocomplete="off"></div>
+        </div>
+        <button type="button" class="backup-btn" style="margin-top:8px;" onclick="saveAnthropicKey()">💾 Save key</button>
+      `}
+      <p id="apiCheckStatus" style="font-size:11.5px;color:var(--ink-soft);margin:8px 0 0;"></p>
+      <p style="font-size:11px;color:var(--ink-soft);margin:10px 0 0;">Or, no key needed: <a href="#" onclick="checkForUpdates(); return false;" style="color:var(--sky-deep);">copy a prompt for a Claude chat</a> and open mancity.com manually.</p>
     </div>
 
     <div class="settings-section">
       <h3>2. Apply what it finds</h3>
-      <p style="font-size:12px;color:var(--ink-soft);margin:0 0 8px;">Upload the file Claude gives you, or paste its contents below.</p>
+      <p style="font-size:12px;color:var(--ink-soft);margin:0 0 8px;">Review the JSON below, then Apply. You can also upload or paste a file from a Claude chat here instead.</p>
       <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
         <button type="button" class="backup-btn" onclick="document.getElementById('fixtureUpdateFileInput').click()">⬆ Upload file</button>
         <input type="file" id="fixtureUpdateFileInput" accept="application/json,.json" style="display:none;" onchange="loadFixtureUpdateFile(this.files[0])">
@@ -1260,8 +1430,126 @@ function loadFixtureUpdateFile(file){
   reader.readAsText(file);
 }
 
+/* ================= ANTHROPIC API (fixture check) =================
+   The user pastes their own Console API key (Settings → Fixture check). Stored in
+   this browser's localStorage only — never synced to the gist, never in a backup
+   export, never in the committed file. One paste per device, same trust model as
+   the GitHub token.
+
+   Patterns below follow lessons learned building this same integration elsewhere:
+   - anthropic-dangerous-direct-browser-access is required for any browser-origin call.
+   - Never send `temperature` — this model rejects it outright.
+   - Errors are triaged, not shown as one generic failure — a bad key and an
+     exhausted Console credit balance need different messages and different responses.
+   - A 400 mentioning "credit balance" / "quota" must NOT be retried — retrying an
+     out-of-credit account just fires the same failure again for no benefit.
+   - Retries change something about the request each time; repeating an identical
+     failed request against deterministic sampling reproduces the identical failure.
+   - JSON is defended even when asked for cleanly: strip fences, slice to the outer
+     braces, and if that still doesn't parse, walk the text and close whatever
+     brackets/strings were left open by a truncated reply rather than discarding it. */
+
+function jsonRepair(text){
+  let s = text.replace(/```json|```/g, '').trim();
+  const first = s.indexOf('{'), last = s.lastIndexOf('}');
+  if(first >= 0 && last > first) s = s.slice(first, last+1);
+  try{ return { value: JSON.parse(s), partial: false }; }catch(e){ /* fall through to repair */ }
+
+  // Truncated mid-object: track string/escape state and bracket depth, then close
+  // whatever's still open. Recovers most of a cut-off reply instead of discarding it.
+  let repaired = s, inString = false, escape = false;
+  const stack = [];
+  for(let i=0;i<s.length;i++){
+    const ch = s[i];
+    if(inString){
+      if(escape) escape = false;
+      else if(ch === '\\') escape = true;
+      else if(ch === '"') inString = false;
+      continue;
+    }
+    if(ch === '"') inString = true;
+    else if(ch === '{' || ch === '[') stack.push(ch === '{' ? '}' : ']');
+    else if(ch === '}' || ch === ']') stack.pop();
+  }
+  if(inString) repaired += '"';
+  while(stack.length) repaired += stack.pop();
+  try{ return { value: JSON.parse(repaired), partial: true }; }
+  catch(e){ throw new Error('could not parse the response as JSON'); }
+}
+
+async function anthropicRequest(prompt, maxTokens){
+  const key = anthropicKey();
+  if(!key) throw Object.assign(new Error('no API key saved'), {code:'no-key'});
+
+  const controller = new AbortController();
+  const timeout = setTimeout(()=>controller.abort(), 30000);
+  let response;
+  try{
+    response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-5',
+        max_tokens: maxTokens,
+        messages: [{ role: 'user', content: prompt }],
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }]
+      })
+    });
+  }catch(e){
+    if(e.name === 'AbortError') throw Object.assign(new Error('timed out'), {code:'timeout'});
+    throw e;
+  }finally{
+    clearTimeout(timeout);
+  }
+
+  if(!response.ok){
+    let body = {};
+    try{ body = await response.json(); }catch(e){}
+    const msg = (body.error && body.error.message) || ('HTTP ' + response.status);
+    if(response.status === 401) throw Object.assign(new Error(msg), {code:'bad-key'});
+    if(response.status === 429) throw Object.assign(new Error(msg), {code:'rate-limited'});
+    if(response.status === 400 && /credit balance|quota/i.test(msg)) throw Object.assign(new Error(msg), {code:'no-credit'});
+    throw Object.assign(new Error(msg), {code:'http-'+response.status});
+  }
+
+  const data = await response.json();
+  const text = (data.content || []).filter(b=>b.type==='text').map(b=>b.text).join('\n');
+  const truncated = data.stop_reason === 'max_tokens';
+  return { text, truncated };
+}
+
+function saveAnthropicKey(){
+  const val = (document.getElementById('anthropicKeyInput').value||'').trim();
+  if(!val){ showToast('Paste a key first'); return; }
+  ckPut(CK.anthropicKey, val);
+  showToast('Key saved to this device');
+  openFixtureUpdateFlow(); // re-render the modal now that a key exists
+}
+function clearAnthropicKey(){
+  const ok = confirm('Remove the saved API key from this device? You\'ll need to paste it again to use "Check now" here.');
+  if(!ok) return;
+  ckPut(CK.anthropicKey, '');
+  showToast('Key removed');
+  openFixtureUpdateFlow();
+}
+
+function anthropicErrorMessage(e){
+  if(e.code === 'no-key') return 'No API key saved — add one in Settings → Fixture check.';
+  if(e.code === 'bad-key') return 'That API key was rejected — check it in Settings → Fixture check.';
+  if(e.code === 'no-credit') return 'Console credit balance is used up (console.anthropic.com — separate from a Claude subscription). Top it up, then try again.';
+  if(e.code === 'rate-limited') return 'Rate limited — wait a moment and try again.';
+  if(e.code === 'timeout') return 'Timed out — try again.';
+  return e.message || 'Something went wrong.';
+}
+
 // Copies a prompt naming the mcfc-fixture-update skill directly, and opens the official
-// fixtures page for a quick manual look while Claude does the real check.
+// fixtures page for a quick manual look — kept as a fallback that needs no API key.
 function checkForUpdates(){
   const prompt = `Run my mcfc-fixture-update skill to check for Manchester City ${settings.seasonLabel} fixture changes and results since ${settings.fixtureDataCheckedOn}.`;
   if(navigator.clipboard && navigator.clipboard.writeText){
@@ -1269,6 +1557,70 @@ function checkForUpdates(){
   }
   window.open('https://www.mancity.com/fixtures/mens', '_blank');
   showToast('Prompt copied — paste into a Claude chat');
+}
+
+function buildFixtureCheckPrompt(instruction){
+  const fixtureTable = FIXTURES.map(f=>{
+    const d = fixtureDate(f).toISOString().slice(0,10);
+    const ko = settings.kickoffs[f.id] || 'TBC';
+    const score = getScore(f.id) || '';
+    return `${f.id} | ${f.opp} | ${d} | KO ${ko} (${koStatus(f.id)})${score ? ' | FT '+score : ''}`;
+  }).join('\n');
+  return `Check mancity.com for Manchester City ${settings.seasonLabel} men's first-team HOME fixture changes (postponements, kick-off time confirmations) and results, compared to what I already have below (last checked ${settings.fixtureDataCheckedOn}).
+
+Current fixtures (id | opponent | date | kickoff (confirmed/provisional) | result if known):
+${fixtureTable}
+
+For each fixture still marked "provisional" above, check whether mancity.com's site now shows the date & kick-off without a "subject to change" flag — if so it's confirmed. Never mark a fixture confirmed on assumption; only when the club's own site has dropped the flag.
+
+Respond with ONLY a JSON object, no markdown fences, no prose, in exactly this shape:
+{"checkedOn":"YYYY-MM-DD","updates":{"<fixture id>":{"date":"YYYY-MM-DD","kickoff":"HH:MM","score":"3-1","koStatus":"confirmed"}}}
+Only include a fixture in "updates" if something actually changed since what I gave you above (including a provisional fixture becoming confirmed); omit keys that didn't change for that fixture. If nothing changed, return {"checkedOn":"YYYY-MM-DD","updates":{}}.${instruction ? '\n\n' + instruction : ''}`;
+}
+
+// Calls the Anthropic API with the user's own key. Retries change the request each
+// time rather than repeating it verbatim — deterministic sampling means an identical
+// retry reproduces an identical failure.
+async function checkForUpdatesViaAPI(){
+  const btn = document.getElementById('apiCheckBtn');
+  const statusEl = document.getElementById('apiCheckStatus');
+  if(!anthropicKey()){
+    statusEl.textContent = anthropicErrorMessage({code:'no-key'});
+    return;
+  }
+  btn.disabled = true;
+  statusEl.textContent = 'Asking Claude to check mancity.com…';
+
+  const attempts = [
+    { maxTokens: 1500, instruction: '' },
+    { maxTokens: 3000, instruction: 'Return valid, complete JSON. Keep it compact.' },
+    { maxTokens: 1000, instruction: 'Keep this very short — updates only, no extra commentary. A complete short answer beats a long one that gets cut off.' }
+  ];
+
+  let lastError = null;
+  for(let i=0; i<attempts.length; i++){
+    try{
+      statusEl.textContent = i===0 ? 'Asking Claude to check mancity.com…' : `Retrying (attempt ${i+1} of ${attempts.length})…`;
+      const { text, truncated } = await anthropicRequest(buildFixtureCheckPrompt(attempts[i].instruction), attempts[i].maxTokens);
+      const { value: parsed, partial } = jsonRepair(text);
+      if(!parsed || typeof parsed.updates !== 'object') throw new Error('unexpected response shape');
+
+      document.getElementById('fixtureImportText').value = JSON.stringify(parsed, null, 2);
+      const n = Object.keys(parsed.updates).length;
+      const partialNote = (partial || truncated) ? ' (reply was cut short — double-check before applying)' : '';
+      statusEl.textContent = (n
+        ? `Found ${n} change${n>1?'s':''}${partialNote} — review below, then Apply.`
+        : `Checked — no changes found since last time.${partialNote}`);
+      btn.disabled = false;
+      return;
+    }catch(e){
+      lastError = e;
+      // Out-of-credit and a bad key fail the same way every time — stop immediately.
+      if(e.code === 'no-credit' || e.code === 'bad-key' || e.code === 'no-key') break;
+    }
+  }
+  statusEl.textContent = `${anthropicErrorMessage(lastError)} Or use "Copy a prompt for a Claude chat" below instead.`;
+  btn.disabled = false;
 }
 
 function applyFixtureImport(){
@@ -1298,6 +1650,9 @@ function applyFixtureImport(){
     }
     if(patch.kickoff){
       settings.kickoffs[fid] = patch.kickoff;
+    }
+    if(patch.koStatus === 'confirmed' || patch.koStatus === 'provisional'){
+      settings.fixtureOverrides[fid] = Object.assign({}, settings.fixtureOverrides[fid], {koStatus: patch.koStatus});
     }
     applied++;
   });
@@ -1465,35 +1820,38 @@ function buildAvailablePrintView(){
     .sort((a,b)=>fixtureDate(a.f)-fixtureDate(b.f));
 
   const rowsHTML = availableFixtures.map(({f,count})=>{
-    const ko = settings.kickoffs[f.id] || 'Kick-off TBC';
-    const dateStr = fixtureDate(f).toLocaleDateString('en-GB',{weekday:'short', day:'numeric', month:'long'});
+    const ko = settings.kickoffs[f.id] || 'KO TBC';
+    const confirmed = koStatus(f.id) === 'confirmed';
+    const dateStr = fixtureDate(f).toLocaleDateString('en-GB',{weekday:'short', day:'numeric', month:'short'});
     return `
       <div class="av-fixture">
         <div class="av-f-left">
           <div class="av-f-date">${dateStr}</div>
-          <div class="av-f-opp">Man City v ${f.opp}${f.rivalry?' <span class="av-rivalry">★</span>':''}</div>
-          <div class="av-f-ko">${ko} · Etihad Stadium</div>
+          <div class="av-f-opp">v ${f.opp}${f.rivalry?' <span class="av-rivalry">★</span>':''}</div>
+          <div class="av-f-ko">${ko} <span class="${confirmed?'av-conf':'av-prov'}">${confirmed?'Confirmed':'Provisional'}</span></div>
         </div>
         <div class="av-f-right">
           <div class="av-count">${count}</div>
-          <div class="av-count-label">${count===1?'ticket':'tickets'} free</div>
+          <div class="av-count-label">${count===1?'ticket':'tickets'} available</div>
         </div>
       </div>`;
   }).join('');
 
   const phone = settings.reservationPhone || '(add your number in Settings → Sharing)';
 
+  // No big branded masthead by default — a slim title line only, to leave room for
+  // every fixture to fit on one A4 page. Fixture rows run two-up (av-grid) for the
+  // same reason; CSS falls back to one column automatically if the list is short.
   document.getElementById('printView').innerHTML = `
-    <div class="av-header">
-      <p class="av-eyebrow">Manchester City FC · ${settings.seasonLabel}</p>
-      <h1>Tickets available</h1>
-      <div class="av-sub">Colin Bell Stand · Etihad Stadium · as of ${printedOn}</div>
+    <div class="av-slim-header">
+      <span class="av-slim-title">Man City tickets available</span>
+      <span class="av-slim-meta">Etihad Stadium · ${settings.seasonLabel} · ${printedOn}</span>
     </div>
 
-    ${rowsHTML || `<div class="av-empty">No tickets currently available — check back closer to the next fixture.</div>`}
+    ${rowsHTML ? `<div class="av-grid">${rowsHTML}</div>` : `<div class="av-empty">No tickets currently available — check back closer to the next fixture.</div>`}
 
     <div class="av-cta">
-      <p class="av-cta-line">Want one? Text me to reserve — first come, first served.</p>
+      <p class="av-cta-line">Want one? Message me privately to reserve — I'll confirm in the group chat.</p>
       <div class="av-cta-phone">${phone}</div>
     </div>
 
@@ -1527,9 +1885,9 @@ function openFixture(fid){
     <div class="kickoff-row">
       <label>Kick-off</label>
       <input type="text" id="koInput" value="${ko}" placeholder="e.g. 15:00 or TBC" style="width:100px;">
-      ${PROVISIONAL_KO_IDS.has(fid)
-        ? '<span class="prov-tag">Provisional</span>'
-        : '<span class="prov-tag" style="color:var(--green);background:var(--green-bg);">Confirmed</span>'}
+      ${koStatus(fid) === 'confirmed'
+        ? '<span class="conf-tag">Confirmed</span>'
+        : '<span class="prov-tag">Provisional</span>'}
     </div>
     <div class="mh-meta" style="margin-top:-12px;margin-bottom:14px;">Source: mancity.com/fixtures/mens</div>
 
@@ -2057,6 +2415,25 @@ function openSettings(){
     </div>
 
     <div class="settings-section">
+      <h3>App lock</h3>
+      <p style="font-size:11.5px;color:var(--ink-soft);margin:0 0 8px;">
+        Deterrent only — this repo is public, so it stops someone stumbling on the link, not a determined attacker with dev tools. The season data itself stays protected by your GitHub token regardless.
+      </p>
+      <p style="font-size:11.5px;color:var(--ink-soft);margin:0 0 8px;">
+        ${APP_AUTH_HASH
+          ? '🔒 Currently <strong>ON</strong> for this deployed file.'
+          : '🔓 Currently <strong>OFF</strong> — anyone with the link can open the app.'}
+      </p>
+      <div class="settings-grid">
+        <div><label>Username</label><input type="text" id="genUsername" autocomplete="off"></div>
+        <div><label>Password</label><input type="password" id="genPassword" autocomplete="off"></div>
+      </div>
+      <button type="button" class="backup-btn" style="margin-top:8px;" onclick="generateAuthHash()">🔑 Generate</button>
+      <div id="genAuthOutput"></div>
+      ${APP_AUTH_HASH ? '<button type="button" class="backup-btn" style="margin-top:8px;" onclick="lockAppNow()">🔒 Lock this device now</button>' : ''}
+    </div>
+
+    <div class="settings-section">
       <h3>Backup</h3>
       <p style="font-size:11.5px;color:var(--ink-soft);margin:0 0 8px;">Especially worth doing since data lives in this browser only (see footer) — a backup file protects you if you clear browser data or switch device.</p>
       <div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -2208,21 +2585,36 @@ document.getElementById('fixtureImportOverlay').addEventListener('click', e=>{
   if(e.target.id==='fixtureImportOverlay') closeFixtureImport();
 });
 
-document.getElementById('appVersion').textContent = 'v' + APP_VERSION;
+function initApp(){
+  document.getElementById('appVersion').textContent = 'v' + APP_VERSION;
 
-// Reopening the app on a phone often resumes the tab rather than reloading it,
-// so refresh from the cloud whenever it comes back to the foreground. If a push
-// is still pending, send that first instead — the local change is the newer one.
-document.addEventListener('visibilitychange', ()=>{
-  if(document.visibilityState !== 'visible' || !cloudEnabled() || cloudBusy) return;
-  if(cloudPushTimer){ clearTimeout(cloudPushTimer); cloudPushTimer = null; cloudPush({silent:true}); }
-  else cloudPull({silent:true});
-});
+  // Reopening the app on a phone often resumes the tab rather than reloading it,
+  // so refresh from the cloud whenever it comes back to the foreground. If a push
+  // is still pending, send that first instead — the local change is the newer one.
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.visibilityState !== 'visible' || !cloudEnabled() || cloudBusy) return;
+    if(cloudPushTimer){ clearTimeout(cloudPushTimer); cloudPushTimer = null; cloudPush({silent:true}); }
+    else cloudPull({silent:true});
+  });
 
-loadData().then(()=>{
-  updateSyncUI();
-  if(cloudEnabled()) cloudPull({silent:true});
-});
+  loadData().then(()=>{
+    updateSyncUI();
+    if(cloudEnabled()) cloudPull({silent:true});
+  });
+}
+
+// Storing the *hash itself* as the unlocked marker (not just a flag) means rotating
+// the password later — generating a new APP_AUTH_HASH and redeploying — automatically
+// re-locks every device that was previously unlocked under the old one.
+if(APP_AUTH_HASH && ckGet(CK.unlocked) !== APP_AUTH_HASH){
+  document.body.classList.add('mcfc-locked');
+  setTimeout(()=>{ const u = document.getElementById('lockUsername'); if(u) u.focus(); }, 50);
+  ['lockUsername','lockPassword'].forEach(id=>{
+    document.getElementById(id).addEventListener('keydown', e=>{ if(e.key==='Enter') attemptUnlock(); });
+  });
+}else{
+  initApp();
+}
 </script>
 </body>
 </html>
