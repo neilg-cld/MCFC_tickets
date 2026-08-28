@@ -541,6 +541,10 @@
    instead of a comment that drifts out of sync with the real thing.
    ===================================================================== */
 const CHANGELOG = [
+  {version:'1.24.0', date:'2026-08-24', notes:[
+    'Fixed fixture-check timeouts. Two problems: the per-request timeout was 30 seconds, too tight once web search is involved (Claude has to run searches and read results before it can answer); and retries were making it worse by asking for a BIGGER reply on a timeout, when the searches themselves were what was slow, not the reply length.',
+    'Now: 55 seconds per attempt, and a timeout retry asks for a tighter search budget (2 searches, then 1, going straight to mancity.com/fixtures/mens) instead of more tokens. Genuine truncated/malformed replies still get a bigger token budget, since that\u2019s a different failure with a different fix.'
+  ]},
   {version:'1.23.0', date:'2026-08-23', notes:[
     'Availability flyer CTA simplified to "Message me privately to reserve your tickets".'
   ]},
@@ -1485,7 +1489,9 @@ async function anthropicRequest(prompt, maxTokens){
   if(!key) throw Object.assign(new Error('no API key saved'), {code:'no-key'});
 
   const controller = new AbortController();
-  const timeout = setTimeout(()=>controller.abort(), 30000);
+  // 30s was too tight once web_search is in play — Claude has to run one or more
+  // searches and read the results before it can answer, which routinely takes longer.
+  const timeout = setTimeout(()=>controller.abort(), 55000);
   let response;
   try{
     response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -1592,19 +1598,21 @@ async function checkForUpdatesViaAPI(){
     return;
   }
   btn.disabled = true;
-  statusEl.textContent = 'Asking Claude to check mancity.com…';
 
-  const attempts = [
-    { maxTokens: 1500, instruction: '' },
-    { maxTokens: 3000, instruction: 'Return valid, complete JSON. Keep it compact.' },
-    { maxTokens: 1000, instruction: 'Keep this very short — updates only, no extra commentary. A complete short answer beats a long one that gets cut off.' }
-  ];
-
+  // What changes between retries depends on WHY the last attempt failed:
+  //  - timeout: the searches themselves are slow, not the reply length — a bigger
+  //    max_tokens budget doesn't help and can make it worse, so ask for a tighter
+  //    search budget instead and keep the token limit modest.
+  //  - anything else (truncated/malformed JSON): a bigger budget is the right fix.
+  let maxTokens = 1500;
+  let instruction = '';
   let lastError = null;
-  for(let i=0; i<attempts.length; i++){
+  const maxAttempts = 3;
+
+  for(let attempt=1; attempt<=maxAttempts; attempt++){
     try{
-      statusEl.textContent = i===0 ? 'Asking Claude to check mancity.com…' : `Retrying (attempt ${i+1} of ${attempts.length})…`;
-      const { text, truncated } = await anthropicRequest(buildFixtureCheckPrompt(attempts[i].instruction), attempts[i].maxTokens);
+      statusEl.textContent = attempt===1 ? 'Asking Claude to check mancity.com…' : `Retrying (attempt ${attempt} of ${maxAttempts})…`;
+      const { text, truncated } = await anthropicRequest(buildFixtureCheckPrompt(instruction), maxTokens);
       const { value: parsed, partial } = jsonRepair(text);
       if(!parsed || typeof parsed.updates !== 'object') throw new Error('unexpected response shape');
 
@@ -1620,6 +1628,15 @@ async function checkForUpdatesViaAPI(){
       lastError = e;
       // Out-of-credit and a bad key fail the same way every time — stop immediately.
       if(e.code === 'no-credit' || e.code === 'bad-key' || e.code === 'no-key') break;
+      if(e.code === 'timeout'){
+        maxTokens = 1200;
+        instruction = attempt === 1
+          ? 'Use at most 2 targeted web searches — go straight to mancity.com/fixtures/mens rather than searching broadly.'
+          : `Use at most 1 web search, straight to mancity.com/fixtures/mens. If a full check isn't possible that quickly, return {"checkedOn":"${new Date().toISOString().slice(0,10)}","updates":{}} rather than continuing to search.`;
+      }else{
+        maxTokens = Math.min(maxTokens * 2, 4000);
+        instruction = 'Return valid, complete JSON. Keep it compact.';
+      }
     }
   }
   statusEl.textContent = `${anthropicErrorMessage(lastError)} Or use "Copy a prompt for a Claude chat" below instead.`;
