@@ -375,10 +375,10 @@
   .av-slim-meta{font-size:10px; color:#5B6B80;}
   .av-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px 10px;}
   .av-fixture{border:1px solid #D8DFE7; border-left:4px solid #6CABDD; border-radius:8px; padding:7px 10px; display:flex; justify-content:space-between; align-items:center; break-inside:avoid;}
-  .av-fixture .av-f-left .av-f-date{font-size:9px; text-transform:uppercase; letter-spacing:0.04em; color:#5B6B80; font-weight:700;}
+  .av-fixture .av-f-left .av-f-date{font-size:12px; text-transform:uppercase; letter-spacing:0.03em; color:#3E86C4; font-weight:800;}
   .av-fixture .av-f-left .av-f-opp{font-family:'Teko',sans-serif; font-size:17px; font-weight:600; color:#101C33; line-height:1.1; margin-top:1px;}
   .av-fixture .av-f-left .av-f-opp .av-rivalry{color:#D9544B;}
-  .av-fixture .av-f-left .av-f-ko{font-size:9.5px; color:#5B6B80; margin-top:1px;}
+  .av-fixture .av-f-left .av-f-ko{font-size:12px; color:#101C33; font-weight:700; margin-top:2px;}
   .av-conf, .av-prov{
     font-size:8px; border-radius:4px; padding:0px 4px; margin-left:3px; font-weight:700;
     text-transform:uppercase; letter-spacing:0.03em; vertical-align:1px;
@@ -541,6 +541,10 @@
    instead of a comment that drifts out of sync with the real thing.
    ===================================================================== */
 const CHANGELOG = [
+  {version:'1.26.0', date:'2026-08-24', notes:[
+    'Availability flyer: date and kick-off time now stand out more \u2014 bigger, bolder, accent colour \u2014 rather than being the smallest, greyest text on the card.',
+    'CTA line now reads "Message me privately to reserve your tickets or check pricing".'
+  ]},
   {version:'1.25.0', date:'2026-08-24', notes:[
     'Fixture check was still timing out at ~60s per attempt even after the previous fix, because the real cause was scope, not timeout length: every check asked Claude to reason about all 19 fixtures across the full season, most of which can\u2019t have new information yet (broadcasters only announce TV picks \u2248 6\u201310 weeks out).',
     'Now only fixtures recently played or within the next ~10 weeks are sent \u2014 typically a handful rather than 19. If nothing falls in that window, the check reports so instantly with no API call at all. Timeout raised to 75s as extra headroom on top of the much smaller workload.'
@@ -1896,7 +1900,7 @@ function buildAvailablePrintView(){
     ${rowsHTML ? `<div class="av-grid">${rowsHTML}</div>` : `<div class="av-empty">No tickets currently available — check back closer to the next fixture.</div>`}
 
     <div class="av-cta">
-      <p class="av-cta-line">Message me privately to reserve your tickets</p>
+      <p class="av-cta-line">Message me privately to reserve your tickets or check pricing</p>
       <div class="av-cta-phone">${phone}</div>
     </div>
 
