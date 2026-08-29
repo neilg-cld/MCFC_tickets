@@ -168,12 +168,13 @@
     letter-spacing:0.03em;
   }
   .seat-chip{
-    width:100%; height:32px; border-radius:8px; border:1px solid rgba(0,0,0,0.06);
-    display:flex; align-items:center; justify-content:center;
-    font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700; letter-spacing:0.02em;
+    width:100%; min-height:34px; border-radius:8px; border:1px solid rgba(0,0,0,0.06);
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; letter-spacing:0.01em;
+    padding:4px 3px; line-height:1.15; word-break:break-word;
   }
   @media(max-width:480px){
-    .seat-chip{height:36px; font-size:11.5px;}
+    .seat-chip{min-height:38px; font-size:9.5px; padding:4px 2px;}
   }
 
   /* status colors */
@@ -377,9 +378,11 @@
   .pv-legend{font-size:9.5px; color:#5B6B80; margin-top:9px; line-height:1.5;}
 
   /* ---------- Available-tickets flyer (portrait, for external sharing) ---------- */
-  .av-slim-header{display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid #101C33; padding-bottom:6px; margin-bottom:12px;}
+  .av-slim-header{border-bottom:2px solid #101C33; padding-bottom:6px; margin-bottom:12px;}
+  .av-slim-title-row{display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:6px;}
   .av-slim-title{font-family:'Teko',sans-serif; font-size:22px; font-weight:700; color:#101C33; letter-spacing:0.01em;}
-  .av-slim-meta{font-size:10px; color:#5B6B80;}
+  .av-asat{font-size:13px; font-weight:800; color:#101C33;}
+  .av-slim-meta{font-size:9px; color:#5B6B80; display:block; margin-top:2px;}
   .av-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px 10px;}
   .av-fixture{border:1px solid #D8DFE7; border-left:4px solid #6CABDD; border-radius:8px; padding:7px 10px; display:flex; justify-content:space-between; align-items:center; break-inside:avoid;}
   .av-fixture .av-f-left .av-f-date{font-size:12px; text-transform:uppercase; letter-spacing:0.03em; color:#3E86C4; font-weight:800;}
@@ -394,6 +397,9 @@
   .av-prov{color:#A9670F; background:#FDE9C7;}
   .av-fixture .av-f-right{text-align:right; white-space:nowrap; padding-left:10px;}
   .av-fixture .av-count{font-family:'Teko',sans-serif; font-size:20px; font-weight:700; color:#3E86C4; line-height:1;}
+  .av-fixture .av-count.av-count-zero{color:#B4670A;}
+  .av-fixture .av-count.av-count-muted{color:#9AA6B2; font-size:18px;}
+  .av-fixture.av-fixture-played{border-left-color:#C3CCD6; opacity:0.72;}
   .av-fixture .av-count-label{font-size:7.5px; text-transform:uppercase; letter-spacing:0.03em; color:#5B6B80;}
   .av-cta{background:#EEF6FC; border:2px solid #6CABDD; border-radius:10px; padding:10px 16px; margin-top:14px; text-align:center;}
   .av-cta .av-cta-line{font-size:12.5px; color:#142032; margin:0 0 4px;}
@@ -445,7 +451,7 @@
 <header class="top">
   <div class="top-row">
     <div>
-      <p class="eyebrow">Colin Bell Stand · Block 031 · Row Y</p>
+      <p class="eyebrow">Colin Bell Stand · Block 031 · Row 28</p>
       <h1 class="title">Season Tickets</h1>
       <p class="subtitle" id="headerSubtitle">Etihad Stadium</p>
     </div>
@@ -548,6 +554,17 @@
    instead of a comment that drifts out of sync with the real thing.
    ===================================================================== */
 const CHANGELOG = [
+  {version:'1.29.0', date:'2026-08-24', notes:[
+    'Availability flyer now always lists all 19 home fixtures, not just ones with tickets currently pending. Each row states its own situation: a played match shows "Played" (with the final score if known) in muted grey rather than a ticket count; an upcoming fixture with nothing free shows "0 tickets available" in amber; only fixtures with something to offer show the blue count as before.',
+    'Print date now reads "As at [date]" and is bigger and bolder in the header, rather than a small grey date buried in the meta line.'
+  ]},
+  {version:'1.28.0', date:'2026-08-24', notes:[
+    'Seat status chips (on the fixture list) now show the full word \u2014 Pending, Attending, Guest, Listed, Sold, Unused, Exchange, Transfer \u2014 instead of 4-letter codes (PEND, ATTN, etc). Chips are slightly bigger with room to wrap onto two lines if needed, so the longer words still fit cleanly at any screen width.',
+    'The printed A4 season summary table keeps the short 4-letter codes, since that table\u2019s one-page-fit depends on narrow columns \u2014 only the on-screen chips changed.'
+  ]},
+  {version:'1.27.1', date:'2026-08-24', notes:[
+    'Fixed header to show the correct seat row (28) — was a placeholder.'
+  ]},
   {version:'1.27.0', date:'2026-08-24', notes:[
     'Mobile header redesigned: Settings/Print/Share buttons now sit in a full-width row below the title instead of squeezed beside it. Desktop layout (buttons top-right) is unchanged \u2014 this only applies under the existing mobile breakpoint.'
   ]},
@@ -830,14 +847,14 @@ const DEFAULT_SETTINGS = {
 };
 
 const STATUS_META = {
-  pending:     {label:'Pending — no action yet',                color:'c-pending',     code:'PEND'},
-  attending:   {label:'Attending',                               color:'c-attending',   code:'ATTN'},
-  guest:       {label:'Guest using seat',                        color:'c-guest',       code:'GUES'},
-  listed:      {label:'Listed on club exchange — outcome pending', color:'c-listed',    code:'LIST'},
-  sold:        {label:'Sold privately',                          color:'c-sold',        code:'SOLD'},
-  unused:      {label:'Unused — wasted',                         color:'c-unused',      code:'UNUS'},
-  exchanged:   {label:'Sold via club exchange',                  color:'c-exchanged',   code:'EXCH'},
-  transferred: {label:'Transferred (1 game, via club site)',     color:'c-transferred', code:'XFER'},
+  pending:     {label:'Pending — no action yet',                color:'c-pending',     code:'Pending',  printCode:'PEND'},
+  attending:   {label:'Attending',                               color:'c-attending',   code:'Attending', printCode:'ATTN'},
+  guest:       {label:'Guest using seat',                        color:'c-guest',       code:'Guest',    printCode:'GUES'},
+  listed:      {label:'Listed on club exchange — outcome pending', color:'c-listed',    code:'Listed',   printCode:'LIST'},
+  sold:        {label:'Sold privately',                          color:'c-sold',        code:'Sold',     printCode:'SOLD'},
+  unused:      {label:'Unused — wasted',                         color:'c-unused',      code:'Unused',   printCode:'UNUS'},
+  exchanged:   {label:'Sold via club exchange',                  color:'c-exchanged',   code:'Exchange', printCode:'EXCH'},
+  transferred: {label:'Transferred (1 game, via club site)',     color:'c-transferred', code:'Transfer', printCode:'XFER'},
 };
 // Statuses where the phone/app on which the tickets live is actually used for match access —
 // i.e. someone physically enters using this phone's ticket. Exchanged/Transferred access happens
@@ -1809,7 +1826,7 @@ function buildPrintView(){
     const dateStr = fixtureDate(f).toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
     const netVal = fixtureNetValue(f.id);
     const statusCells = SEATS.map(s=>{
-      const code = STATUS_META[st[s].status].code;
+      const code = STATUS_META[st[s].status].printCode;
       const cls = STATUS_META[st[s].status].color;
       return `<td class="pv-status-cell ${cls}">${code}</td>`;
     }).join('');
@@ -1869,29 +1886,42 @@ function printSeason(){
 // the family needs, and keeps the flyer simple to scan.
 function buildAvailablePrintView(){
   const printedOn = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
-  const availableFixtures = FIXTURES
+  const allFixtures = FIXTURES
     .map(f=>{
       ensureAssignment(f.id);
       const count = SEATS.filter(s=>assignments[f.id][s].status==='pending').length;
-      return {f, count};
+      return {f, count, played: isPast(f)};
     })
-    .filter(x=>x.count>0)
     .sort((a,b)=>fixtureDate(a.f)-fixtureDate(b.f));
 
-  const rowsHTML = availableFixtures.map(({f,count})=>{
+  const rowsHTML = allFixtures.map(({f,count,played})=>{
     const ko = settings.kickoffs[f.id] || 'KO TBC';
     const confirmed = koStatus(f.id) === 'confirmed';
+    const score = getScore(f.id);
     const dateStr = fixtureDate(f).toLocaleDateString('en-GB',{weekday:'short', day:'numeric', month:'short'});
+
+    const koLine = played
+      ? (score ? `FT ${score}` : 'Played')
+      : `${ko} <span class="${confirmed?'av-conf':'av-prov'}">${confirmed?'Confirmed':'Provisional'}</span>`;
+
+    let rightHTML;
+    if(played){
+      rightHTML = `<div class="av-count av-count-muted">—</div><div class="av-count-label">Played</div>`;
+    }else if(count === 0){
+      rightHTML = `<div class="av-count av-count-zero">0</div><div class="av-count-label">tickets available</div>`;
+    }else{
+      rightHTML = `<div class="av-count">${count}</div><div class="av-count-label">${count===1?'ticket':'tickets'} available</div>`;
+    }
+
     return `
-      <div class="av-fixture">
+      <div class="av-fixture${played?' av-fixture-played':''}">
         <div class="av-f-left">
           <div class="av-f-date">${dateStr}</div>
           <div class="av-f-opp">v ${f.opp}${f.rivalry?' <span class="av-rivalry">★</span>':''}</div>
-          <div class="av-f-ko">${ko} <span class="${confirmed?'av-conf':'av-prov'}">${confirmed?'Confirmed':'Provisional'}</span></div>
+          <div class="av-f-ko">${koLine}</div>
         </div>
         <div class="av-f-right">
-          <div class="av-count">${count}</div>
-          <div class="av-count-label">${count===1?'ticket':'tickets'} available</div>
+          ${rightHTML}
         </div>
       </div>`;
   }).join('');
@@ -1903,11 +1933,14 @@ function buildAvailablePrintView(){
   // same reason; CSS falls back to one column automatically if the list is short.
   document.getElementById('printView').innerHTML = `
     <div class="av-slim-header">
-      <span class="av-slim-title">Man City tickets available</span>
-      <span class="av-slim-meta">Etihad Stadium · ${settings.seasonLabel} · ${printedOn}</span>
+      <div class="av-slim-title-row">
+        <span class="av-slim-title">Man City tickets available</span>
+        <span class="av-asat">As at ${printedOn}</span>
+      </div>
+      <span class="av-slim-meta">Etihad Stadium · ${settings.seasonLabel} · all ${allFixtures.length} home fixtures</span>
     </div>
 
-    ${rowsHTML ? `<div class="av-grid">${rowsHTML}</div>` : `<div class="av-empty">No tickets currently available — check back closer to the next fixture.</div>`}
+    <div class="av-grid">${rowsHTML}</div>
 
     <div class="av-cta">
       <p class="av-cta-line">Message me privately to reserve your tickets or check pricing</p>
