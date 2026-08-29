@@ -541,6 +541,10 @@
    instead of a comment that drifts out of sync with the real thing.
    ===================================================================== */
 const CHANGELOG = [
+  {version:'1.25.0', date:'2026-08-24', notes:[
+    'Fixture check was still timing out at ~60s per attempt even after the previous fix, because the real cause was scope, not timeout length: every check asked Claude to reason about all 19 fixtures across the full season, most of which can\u2019t have new information yet (broadcasters only announce TV picks \u2248 6\u201310 weeks out).',
+    'Now only fixtures recently played or within the next ~10 weeks are sent \u2014 typically a handful rather than 19. If nothing falls in that window, the check reports so instantly with no API call at all. Timeout raised to 75s as extra headroom on top of the much smaller workload.'
+  ]},
   {version:'1.24.0', date:'2026-08-24', notes:[
     'Fixed fixture-check timeouts. Two problems: the per-request timeout was 30 seconds, too tight once web search is involved (Claude has to run searches and read results before it can answer); and retries were making it worse by asking for a BIGGER reply on a timeout, when the searches themselves were what was slow, not the reply length.',
     'Now: 55 seconds per attempt, and a timeout retry asks for a tighter search budget (2 searches, then 1, going straight to mancity.com/fixtures/mens) instead of more tokens. Genuine truncated/malformed replies still get a bigger token budget, since that\u2019s a different failure with a different fix.'
@@ -1491,7 +1495,7 @@ async function anthropicRequest(prompt, maxTokens){
   const controller = new AbortController();
   // 30s was too tight once web_search is in play — Claude has to run one or more
   // searches and read the results before it can answer, which routinely takes longer.
-  const timeout = setTimeout(()=>controller.abort(), 55000);
+  const timeout = setTimeout(()=>controller.abort(), 75000);
   let response;
   try{
     response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -1568,19 +1572,36 @@ function checkForUpdates(){
   showToast('Prompt copied — paste into a Claude chat');
 }
 
+// Checking a fixture months away wastes the whole search budget on something that
+// provably can't have an answer yet (broadcasters haven't picked those games). Only
+// worth asking about what could plausibly have changed: recently played, or coming up soon.
+function fixturesInCheckWindow(){
+  const now = new Date();
+  const recentCutoff = new Date(now); recentCutoff.setDate(recentCutoff.getDate()-4);   // catch a just-played result
+  const nearCutoff = new Date(now); nearCutoff.setDate(nearCutoff.getDate()+70);          // ~10 weeks — beyond this, TV picks genuinely don't exist yet
+  return FIXTURES.filter(f=>{
+    const d = fixtureDate(f);
+    return d >= recentCutoff && d <= nearCutoff;
+  });
+}
+
 function buildFixtureCheckPrompt(instruction){
-  const fixtureTable = FIXTURES.map(f=>{
+  const now = new Date();
+  const relevantFixtures = fixturesInCheckWindow();
+
+  const fixtureTable = relevantFixtures.map(f=>{
     const d = fixtureDate(f).toISOString().slice(0,10);
     const ko = settings.kickoffs[f.id] || 'TBC';
     const score = getScore(f.id) || '';
     return `${f.id} | ${f.opp} | ${d} | KO ${ko} (${koStatus(f.id)})${score ? ' | FT '+score : ''}`;
   }).join('\n');
-  return `Check mancity.com for Manchester City ${settings.seasonLabel} men's first-team HOME fixture changes (postponements, kick-off time confirmations) and results, compared to what I already have below (last checked ${settings.fixtureDataCheckedOn}).
 
-Current fixtures (id | opponent | date | kickoff (confirmed/provisional) | result if known):
+  return `Check mancity.com for Manchester City ${settings.seasonLabel} men's first-team HOME fixture changes (postponements, kick-off time confirmations) and results, compared to what I already have below (last checked ${settings.fixtureDataCheckedOn}). Today is ${now.toISOString().slice(0,10)}.
+
+Only these fixtures are within range to plausibly have new information (recently played, or within the next ~10 weeks — TV selections for anything further out haven't been made yet, so don't spend time on fixtures outside this list):
 ${fixtureTable}
 
-For each fixture still marked "provisional" above, check whether mancity.com's site now shows the date & kick-off without a "subject to change" flag — if so it's confirmed. Never mark a fixture confirmed on assumption; only when the club's own site has dropped the flag.
+For each one still marked "provisional", check whether mancity.com's site now shows the date & kick-off without a "subject to change" flag — if so it's confirmed. Never mark a fixture confirmed on assumption; only when the club's own site has dropped the flag.
 
 Respond with ONLY a JSON object, no markdown fences, no prose, in exactly this shape:
 {"checkedOn":"YYYY-MM-DD","updates":{"<fixture id>":{"date":"YYYY-MM-DD","kickoff":"HH:MM","score":"3-1","koStatus":"confirmed"}}}
@@ -1595,6 +1616,10 @@ async function checkForUpdatesViaAPI(){
   const statusEl = document.getElementById('apiCheckStatus');
   if(!anthropicKey()){
     statusEl.textContent = anthropicErrorMessage({code:'no-key'});
+    return;
+  }
+  if(fixturesInCheckWindow().length === 0){
+    statusEl.textContent = 'Nothing to check right now — no fixtures recently played or within the next ~10 weeks.';
     return;
   }
   btn.disabled = true;
