@@ -554,6 +554,9 @@
    instead of a comment that drifts out of sync with the real thing.
    ===================================================================== */
 const CHANGELOG = [
+  {version:'1.30.0', date:'2026-08-24', notes:[
+    'Availability flyer now explains the red star \u2014 "\u2605 Big 6 opponent" \u2014 in the header. The season print table already had this key; the flyer, which goes to people outside the app, didn\'t.'
+  ]},
   {version:'1.29.0', date:'2026-08-24', notes:[
     'Availability flyer now always lists all 19 home fixtures, not just ones with tickets currently pending. Each row states its own situation: a played match shows "Played" (with the final score if known) in muted grey rather than a ticket count; an upcoming fixture with nothing free shows "0 tickets available" in amber; only fixtures with something to offer show the blue count as before.',
     'Print date now reads "As at [date]" and is bigger and bolder in the header, rather than a small grey date buried in the meta line.'
@@ -1937,7 +1940,7 @@ function buildAvailablePrintView(){
         <span class="av-slim-title">Man City tickets available</span>
         <span class="av-asat">As at ${printedOn}</span>
       </div>
-      <span class="av-slim-meta">Etihad Stadium · ${settings.seasonLabel} · all ${allFixtures.length} home fixtures</span>
+      <span class="av-slim-meta">Etihad Stadium · ${settings.seasonLabel} · all ${allFixtures.length} home fixtures · <span class="av-rivalry">★</span> Big 6 opponent</span>
     </div>
 
     <div class="av-grid">${rowsHTML}</div>
