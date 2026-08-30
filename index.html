@@ -162,6 +162,10 @@
   .fmeta{font-size:12px; color:var(--ink-soft); margin-top:1px;}
   .fnet{flex-shrink:0; font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--ink-soft);}
   .seats-full{display:flex; gap:8px; margin-top:12px;}
+  .fcontacts{font-size:11px; color:var(--ink-soft); margin-top:8px; padding-top:8px; border-top:1px dashed var(--line); line-height:1.7;}
+  .fnote-seat{font-weight:700; color:var(--ink);}
+  .fee-owed{color:#B4670A; font-weight:700;}
+  .fee-paid{color:#0C7A3C; font-weight:600;}
   .seat-col{flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; gap:4px;}
   .seat-initials{
     font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; color:var(--ink-soft);
@@ -554,6 +558,11 @@
    instead of a comment that drifts out of sync with the real thing.
    ===================================================================== */
 const CHANGELOG = [
+  {version:'1.31.0', date:'2026-08-24', notes:[
+    'Fee paid checkbox. Any Guest, Sold or Transferred ticket with a fee now has a "Fee paid" tick box next to the amount field.',
+    'Main list now shows who has each ticket and whether the fee is settled, right under the seat chips \u2014 e.g. "S: Priya Shah \u2014 \u20ac70 paid" or "N: Someone Else \u2014 \u20ac20 owed" \u2014 without opening the fixture. Owed amounts stand out in amber, paid in green.',
+    'Bulk apply (select several seats \u2192 apply one status to all) now includes the same contact picker as individual tickets, for Guest, Sold and Transferred \u2014 picking a saved contact fills the name for every selected seat at once.'
+  ]},
   {version:'1.30.0', date:'2026-08-24', notes:[
     'Availability flyer now explains the red star \u2014 "\u2605 Big 6 opponent" \u2014 in the header. The season print table already had this key; the flyer, which goes to people outside the app, didn\'t.'
   ]},
@@ -895,7 +904,7 @@ let bulkStatus = 'attending';
 function defaultSeatState(){
   return {
     status:'pending', guestName:'', buyerName:'', recipientName:'', amount:'', note:'',
-    ticketType:'adult', priceBasis:'fnf', contactId:''
+    ticketType:'adult', priceBasis:'fnf', contactId:'', paid:false
   };
 }
 function ensureAssignment(fid){
@@ -1335,6 +1344,23 @@ function passesFilter(f){
   return true;
 }
 
+// One-line summary shown on the main list per seat that's with someone — who has it,
+// and if a fee's involved, whether it's been paid. Answers "who has my tickets and have
+// they paid" without opening every fixture.
+function frontRowNote(s, seatSt){
+  if(!['guest','sold','transferred'].includes(seatSt.status)) return null;
+  let name = '';
+  if(seatSt.status==='guest') name = seatSt.guestName;
+  else if(seatSt.status==='sold') name = seatSt.buyerName;
+  else if(seatSt.status==='transferred') name = seatSt.recipientName;
+  const amt = Number(seatSt.amount)||0;
+  const bits = [];
+  if(name) bits.push(name);
+  if(amt>0) bits.push(`<span class="${seatSt.paid?'fee-paid':'fee-owed'}">${fmtMoney(amt)} ${seatSt.paid?'paid':'owed'}</span>`);
+  if(!bits.length) return null;
+  return `<span class="fnote-seat">${SEAT_INITIALS[s]}:</span> ${bits.join(' — ')}`;
+}
+
 function renderList(){
   const container = document.getElementById('fixtureList');
   container.innerHTML = '';
@@ -1370,6 +1396,7 @@ function renderList(){
             <div class="seat-chip ${STATUS_META[st[s].status].color}" title="${s}: ${STATUS_META[st[s].status].label}">${STATUS_META[st[s].status].code}</div>
           </div>`).join('')}
       </div>
+      ${(()=>{ const notes = SEATS.map(s=>frontRowNote(s, st[s])).filter(Boolean); return notes.length ? `<div class="fcontacts">${notes.join(' · ')}</div>` : ''; })()}
     `;
     container.appendChild(div);
   });
@@ -2072,13 +2099,35 @@ function updateBulkBar(){
   renderBulkFields();
 }
 
+function bulkContactPickerHTML(nameFieldId){
+  const options = (settings.contacts||[]).map(c=>
+    `<option value="${c.id}">${c.name}${c.phone?' · '+c.phone:''}</option>`
+  ).join('');
+  return `<div><span class="field-label">Contact</span>
+    <select id="bulk-contactId" onchange="onBulkContactPick('${nameFieldId}')">
+      <option value="">— not saved as a contact —</option>
+      ${options}
+    </select>
+  </div>`;
+}
+function onBulkContactPick(nameFieldId){
+  const select = document.getElementById('bulk-contactId');
+  const nameInput = document.getElementById(nameFieldId);
+  if(!select || !nameInput) return;
+  const contact = (settings.contacts||[]).find(c=>c.id===select.value);
+  if(contact) nameInput.value = contact.name;
+}
+
 function renderBulkFields(){
   const wrap = document.getElementById('bulkFieldsWrap');
   if(!wrap) return;
   if(bulkStatus==='guest'){
     wrap.innerHTML = `
       <div class="extra-fields" style="margin-top:8px;">
+        ${bulkContactPickerHTML('bulk-guestName')}
         <div><span class="field-label">Guest name</span><input type="text" id="bulk-guestName"></div>
+      </div>
+      <div class="extra-fields single" style="margin-top:8px;">
         <div><span class="field-label">Fee, if any (€)</span><input type="number" id="bulk-amount" placeholder="Blank = free"></div>
       </div>`;
   } else if(bulkStatus==='sold'){
@@ -2096,13 +2145,17 @@ function renderBulkFields(){
         </div>
       </div>
       <div class="extra-fields single" style="margin-top:8px;">
+        ${bulkContactPickerHTML('bulk-buyerName')}
         <div><span class="field-label">Buyer</span><input type="text" id="bulk-buyerName"></div>
       </div>
       <div class="suggest" style="margin-top:8px;">Each seat's price is calculated automatically from the ticket type &amp; basis above — fine-tune individual amounts afterwards if needed.</div>`;
   } else if(bulkStatus==='transferred'){
     wrap.innerHTML = `
       <div class="extra-fields" style="margin-top:8px;">
+        ${bulkContactPickerHTML('bulk-recipientName')}
         <div><span class="field-label">Transferred to</span><input type="text" id="bulk-recipientName"></div>
+      </div>
+      <div class="extra-fields single" style="margin-top:8px;">
         <div><span class="field-label">Fee, if any (€)</span><input type="number" id="bulk-amount" placeholder="Blank = free"></div>
       </div>`;
   } else if(bulkStatus==='exchanged'){
@@ -2130,6 +2183,7 @@ function applyBulk(){
   const sharedFee      = document.getElementById('bulk-amount')       ? document.getElementById('bulk-amount').value : '';
   const ticketType      = document.getElementById('bulk-ticketType')   ? document.getElementById('bulk-ticketType').value : 'adult';
   const priceBasis       = document.getElementById('bulk-priceBasis')   ? document.getElementById('bulk-priceBasis').value : 'fnf';
+  const contactId          = document.getElementById('bulk-contactId')    ? document.getElementById('bulk-contactId').value : '';
 
   bulkSelectedSeats.forEach(seat=>{
     const st = assignments[fid][seat];
@@ -2137,14 +2191,17 @@ function applyBulk(){
     if(bulkStatus==='guest'){
       st.guestName = guestName;
       st.amount = sharedFee;
+      st.contactId = contactId;
     } else if(bulkStatus==='sold'){
       st.ticketType = ticketType;
       st.priceBasis = priceBasis;
       st.buyerName = buyerName;
+      st.contactId = contactId;
       st.amount = Math.round(computeSuggestedPrice(ticketType, priceBasis)); // default pricing, applied per seat
     } else if(bulkStatus==='transferred'){
       st.recipientName = recipientName;
       st.amount = sharedFee;
+      st.contactId = contactId;
     }
     // attending / pending / listed / unused / exchanged need no extra fields — automatic or none
   });
@@ -2200,6 +2257,13 @@ function onContactPick(seat, nameField){
   if(contact) nameInput.value = contact.name;
 }
 
+function paidCheckboxHTML(seat, st){
+  return `<label style="display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink-soft); margin-top:6px; cursor:pointer;">
+    <input type="checkbox" data-seat="${seat}" data-field="paid" ${st.paid?'checked':''} style="accent-color:var(--sky-deep); width:15px; height:15px; margin:0;">
+    Fee paid
+  </label>`;
+}
+
 function renderExtraFields(seat, st){
   const wrap = document.querySelector(`[data-seat-extra="${seat}"]`);
   const pgv = perGameValue(seat);
@@ -2211,7 +2275,7 @@ function renderExtraFields(seat, st){
         <div><span class="field-label">Guest name</span><input type="text" data-seat="${seat}" data-field="guestName" value="${st.guestName||''}"></div>
       </div>
       <div class="extra-fields single" style="margin-top:8px;">
-        <div><span class="field-label">Fee, if any (€)</span><input type="number" data-seat="${seat}" data-field="amount" value="${st.amount||''}" placeholder="Blank = free"></div>
+        <div><span class="field-label">Fee, if any (€)</span><input type="number" data-seat="${seat}" data-field="amount" value="${st.amount||''}" placeholder="Blank = free">${paidCheckboxHTML(seat,st)}</div>
       </div>`;
 
   } else if(st.status==='sold'){
@@ -2221,7 +2285,7 @@ function renderExtraFields(seat, st){
         <div><span class="field-label">Buyer</span><input type="text" data-seat="${seat}" data-field="buyerName" value="${st.buyerName||''}"></div>
       </div>
       <div class="extra-fields single" style="margin-top:8px;">
-        <div><span class="field-label">Amount received (€)</span><input type="number" id="amount-${seat}" data-seat="${seat}" data-field="amount" value="${st.amount||''}"></div>
+        <div><span class="field-label">Amount received (€)</span><input type="number" id="amount-${seat}" data-seat="${seat}" data-field="amount" value="${st.amount||''}">${paidCheckboxHTML(seat,st)}</div>
       </div>`;
 
   } else if(st.status==='listed'){
@@ -2242,7 +2306,7 @@ function renderExtraFields(seat, st){
         <div><span class="field-label">Transferred to</span><input type="text" data-seat="${seat}" data-field="recipientName" value="${st.recipientName||''}" placeholder="Name on their Man City account"></div>
       </div>
       <div class="extra-fields" style="margin-top:8px;">
-        <div><span class="field-label">Fee, if any (€)</span><input type="number" data-seat="${seat}" data-field="amount" value="${st.amount||''}" placeholder="Blank = free"></div>
+        <div><span class="field-label">Fee, if any (€)</span><input type="number" data-seat="${seat}" data-field="amount" value="${st.amount||''}" placeholder="Blank = free">${paidCheckboxHTML(seat,st)}</div>
         <div><span class="field-label">Note</span><input type="text" data-seat="${seat}" data-field="note" value="${st.note||''}"></div>
       </div>`;
 
@@ -2310,7 +2374,7 @@ function saveFixture(){
   settings.kickoffs[fid] = document.getElementById('koInput').value || 'TBC';
   document.querySelectorAll('#seatCards [data-seat][data-field]').forEach(el=>{
     const seat = el.dataset.seat, field = el.dataset.field;
-    if(seat && field) assignments[fid][seat][field] = el.value;
+    if(seat && field) assignments[fid][seat][field] = (el.type === 'checkbox') ? el.checked : el.value;
   });
   saveSettings();
   saveAssignments();
