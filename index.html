@@ -558,6 +558,11 @@
    instead of a comment that drifts out of sync with the real thing.
    ===================================================================== */
 const CHANGELOG = [
+  {version:'1.32.0', date:'2026-08-25', notes:[
+    'Fixture check is now one tap for the common case. If nothing\'s changed, it applies itself \u2014 "last checked" date moves forward and the panel closes with a confirmation toast \u2014 no need to press Apply on an empty result. A cut-short/unreliable reply still stops for review rather than risk a false "nothing changed".',
+    'When real changes ARE found, the flow is unchanged \u2014 review below, then Apply \u2014 but the message is clearer about what happens next ("review below, then press Apply update to finish").',
+    'The no-key manual workflow (copy a prompt for a separate Claude chat) is now clearly labelled "Backup option" and visually de-emphasised, since the in-app check is the normal path and this is only for when that isn\'t working.'
+  ]},
   {version:'1.31.0', date:'2026-08-24', notes:[
     'Fee paid checkbox. Any Guest, Sold or Transferred ticket with a fee now has a "Fee paid" tick box next to the amount field.',
     'Main list now shows who has each ticket and whether the fee is settled, right under the seat chips \u2014 e.g. "S: Priya Shah \u2014 \u20ac70 paid" or "N: Someone Else \u2014 \u20ac20 owed" \u2014 without opening the fixture. Owed amounts stand out in amber, paid in green.',
@@ -1456,7 +1461,7 @@ function openFixtureUpdateFlow(){
     <div class="settings-section">
       <h3>1. Run the check</h3>
       ${anthropicKey() ? `
-        <p style="font-size:12px;color:var(--ink-soft);margin:0 0 8px;">Asks Claude to search mancity.com directly and fill in the box below — no need to leave the app. It only ever proposes changes; nothing is applied until you review them and click Apply.</p>
+        <p style="font-size:12px;color:var(--ink-soft);margin:0 0 8px;">One tap. If nothing's changed, this finishes on its own — no need to press Apply. If something has changed, it's shown below for you to check before applying.</p>
         <button type="button" class="backup-btn" id="apiCheckBtn" onclick="checkForUpdatesViaAPI()">🔎 Check now</button>
         <button type="button" class="backup-btn" onclick="clearAnthropicKey()">✕ Remove saved key</button>
       ` : `
@@ -1467,18 +1472,23 @@ function openFixtureUpdateFlow(){
         <button type="button" class="backup-btn" style="margin-top:8px;" onclick="saveAnthropicKey()">💾 Save key</button>
       `}
       <p id="apiCheckStatus" style="font-size:11.5px;color:var(--ink-soft);margin:8px 0 0;"></p>
-      <p style="font-size:11px;color:var(--ink-soft);margin:10px 0 0;">Or, no key needed: <a href="#" onclick="checkForUpdates(); return false;" style="color:var(--sky-deep);">copy a prompt for a Claude chat</a> and open mancity.com manually.</p>
     </div>
 
     <div class="settings-section">
-      <h3>2. Apply what it finds</h3>
-      <p style="font-size:12px;color:var(--ink-soft);margin:0 0 8px;">Review the JSON below, then Apply. You can also upload or paste a file from a Claude chat here instead.</p>
+      <h3>2. Review &amp; apply</h3>
+      <p style="font-size:12px;color:var(--ink-soft);margin:0 0 8px;">Only needed if the check above found something to review. You can also paste or upload a result from elsewhere.</p>
       <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
         <button type="button" class="backup-btn" onclick="document.getElementById('fixtureUpdateFileInput').click()">⬆ Upload file</button>
         <input type="file" id="fixtureUpdateFileInput" accept="application/json,.json" style="display:none;" onchange="loadFixtureUpdateFile(this.files[0])">
       </div>
       <textarea id="fixtureImportText" rows="6" style="width:100%; font-family:'JetBrains Mono',monospace; font-size:12px; border:1px solid var(--line); border-radius:8px; padding:10px; resize:vertical;" placeholder='{"checkedOn":"2026-08-08","updates":{"f7":{"date":"2026-12-03","kickoff":"20:00"},"f1":{"score":"3-1"}}}'></textarea>
       <p id="fixtureImportStatus" style="font-size:11.5px;color:var(--ink-soft);margin:8px 0 0;"></p>
+    </div>
+
+    <div class="settings-section" style="opacity:0.7;">
+      <h3 style="font-size:13px;">Backup option</h3>
+      <p style="font-size:11px;color:var(--ink-soft);margin:0 0 6px;">No API key needed, but manual: copies a prompt for a separate Claude chat, then paste its answer into the box above yourself. Only worth using if the check above isn't working.</p>
+      <a href="#" onclick="checkForUpdates(); return false;" style="font-size:12px;color:var(--sky-deep);">📋 Copy prompt for a Claude chat</a>
     </div>
 
     <div class="modal-footer">
@@ -1704,10 +1714,20 @@ async function checkForUpdatesViaAPI(){
 
       document.getElementById('fixtureImportText').value = JSON.stringify(parsed, null, 2);
       const n = Object.keys(parsed.updates).length;
+      const reliable = !partial && !truncated;
+
+      if(n === 0 && reliable){
+        // Nothing to review — apply immediately so "last checked" still moves forward,
+        // rather than leaving Neil to click Apply on an empty diff for no reason.
+        applyFixtureImport();
+        btn.disabled = false;
+        return;
+      }
+
       const partialNote = (partial || truncated) ? ' (reply was cut short — double-check before applying)' : '';
-      statusEl.textContent = (n
-        ? `Found ${n} change${n>1?'s':''}${partialNote} — review below, then Apply.`
-        : `Checked — no changes found since last time.${partialNote}`);
+      statusEl.textContent = n
+        ? `Found ${n} change${n>1?'s':''}${partialNote} — review below, then press Apply update to finish.`
+        : `Checked, but the reply was cut short — review below before applying.`;
       btn.disabled = false;
       return;
     }catch(e){
@@ -1725,7 +1745,7 @@ async function checkForUpdatesViaAPI(){
       }
     }
   }
-  statusEl.textContent = `${anthropicErrorMessage(lastError)} Or use "Copy a prompt for a Claude chat" below instead.`;
+  statusEl.textContent = `${anthropicErrorMessage(lastError)} See "Backup option" below.`;
   btn.disabled = false;
 }
 
@@ -1770,7 +1790,10 @@ function applyFixtureImport(){
   saveSettings();
   render();
   closeFixtureImport();
-  showToast(`Fixture update applied — ${applied} fixture${applied===1?'':'s'} updated${skipped?`, ${skipped} skipped`:''}`);
+  const checkedStr = new Date(settings.fixtureDataCheckedOn+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  showToast(applied === 0
+    ? `✓ Up to date — checked ${checkedStr}, no changes`
+    : `✓ Applied — ${applied} fixture${applied===1?'':'s'} updated${skipped?`, ${skipped} skipped`:''}`);
 }
 
 function computeAccessStats(){
