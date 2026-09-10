@@ -333,6 +333,24 @@
   }
   .settings-section h3:first-child{margin-top:0;}
   .settings-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  .check-status-box{
+    display:none; border-radius:10px; padding:11px 13px; margin-top:10px; font-size:13px; line-height:1.5;
+  }
+  .check-status-box.show{display:block;}
+  .check-status-box .csb-head{display:flex; justify-content:space-between; align-items:center; font-weight:700; gap:10px;}
+  .check-status-box .csb-close{
+    background:none; border:none; cursor:pointer; font-size:12px; color:inherit; opacity:0.65; padding:2px 4px; flex-shrink:0;
+  }
+  .check-status-box .csb-close:hover{opacity:1;}
+  .check-status-box #checkStatusBody{font-weight:400; margin-top:3px;}
+  .check-status-box.status-progress{background:var(--paper); border:1px solid var(--sky); color:var(--ink);}
+  .check-status-box.status-success{background:var(--green-bg); border:1px solid var(--green); color:#12321F;}
+  .check-status-box.status-review{background:var(--amber-bg); border:1px solid var(--amber); color:#3A2705;}
+  .check-status-box.status-failure{background:var(--coral-bg); border:1px solid var(--coral); color:#3A1512;}
+  .default-pill{
+    display:inline-block; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em;
+    background:var(--sky); color:#fff; border-radius:5px; padding:2px 7px; vertical-align:middle; margin-left:6px;
+  }
   .settings-grid label{font-size:12px; color:var(--ink-soft); display:block; margin-bottom:3px;}
   .settings-grid input{width:100%; border:1px solid var(--line); border-radius:8px; padding:7px 9px; font-size:13px; font-family:'JetBrains Mono',monospace;}
   .price-table{width:100%; border-collapse:collapse; font-size:12.5px; margin-top:4px;}
@@ -558,6 +576,13 @@
    instead of a comment that drifts out of sync with the real thing.
    ===================================================================== */
 const CHANGELOG = [
+  {version:'1.33.0', date:'2026-08-26', notes:[
+    'Fixture check now shows a defined, colour-coded status box instead of a subtle grey line \u2014 blue while checking, green on a clean success, amber when something needs review, red on failure. Progress messages (checking\u2026, retrying\u2026) appear in this box as they happen.',
+    'On a clean "nothing changed" result, the box shows the confirmation and closes itself after a few seconds (or close it immediately) \u2014 the underlying panel now stays open until then, so the result is actually seen rather than vanishing instantly.',
+    'When changes ARE found, or a reply couldn\'t be trusted, the box stays open with a clear next step and a close button \u2014 it never auto-dismisses something that still needs a decision.',
+    'On failure, the box stays open (never auto-closes) and points at the Backup option.',
+    'Step 1 now carries a "Default" badge to make clear it\'s the normal path, not the backup one.'
+  ]},
   {version:'1.32.0', date:'2026-08-25', notes:[
     'Fixture check is now one tap for the common case. If nothing\'s changed, it applies itself \u2014 "last checked" date moves forward and the panel closes with a confirmation toast \u2014 no need to press Apply on an empty result. A cut-short/unreliable reply still stops for review rather than risk a false "nothing changed".',
     'When real changes ARE found, the flow is unchanged \u2014 review below, then Apply \u2014 but the message is clearer about what happens next ("review below, then press Apply update to finish").',
@@ -1459,7 +1484,7 @@ function openFixtureUpdateFlow(){
     </div>
 
     <div class="settings-section">
-      <h3>1. Run the check</h3>
+      <h3>1. Run the check <span class="default-pill">Default</span></h3>
       ${anthropicKey() ? `
         <p style="font-size:12px;color:var(--ink-soft);margin:0 0 8px;">One tap. If nothing's changed, this finishes on its own — no need to press Apply. If something has changed, it's shown below for you to check before applying.</p>
         <button type="button" class="backup-btn" id="apiCheckBtn" onclick="checkForUpdatesViaAPI()">🔎 Check now</button>
@@ -1471,7 +1496,13 @@ function openFixtureUpdateFlow(){
         </div>
         <button type="button" class="backup-btn" style="margin-top:8px;" onclick="saveAnthropicKey()">💾 Save key</button>
       `}
-      <p id="apiCheckStatus" style="font-size:11.5px;color:var(--ink-soft);margin:8px 0 0;"></p>
+      <div class="check-status-box" id="checkStatusBox">
+        <div class="csb-head">
+          <span id="checkStatusTitle"></span>
+          <button type="button" class="csb-close" id="checkStatusClose" onclick="closeCheckStatusBox()" style="display:none;">✕ Close</button>
+        </div>
+        <div id="checkStatusBody"></div>
+      </div>
     </div>
 
     <div class="settings-section">
@@ -1682,15 +1713,30 @@ Only include a fixture in "updates" if something actually changed since what I g
 // Calls the Anthropic API with the user's own key. Retries change the request each
 // time rather than repeating it verbatim — deterministic sampling means an identical
 // retry reproduces an identical failure.
+// Drives the boxed status/results display — replaces a single subtle grey line with a
+// defined, colour-coded box so progress, success, and failure are unmistakable rather
+// than easy to miss. kind: 'progress' | 'success' | 'review' | 'failure'.
+function showCheckStatus(kind, title, bodyHTML, closable){
+  const box = document.getElementById('checkStatusBox');
+  if(!box) return;
+  box.className = 'check-status-box show status-' + kind;
+  document.getElementById('checkStatusTitle').textContent = title;
+  document.getElementById('checkStatusBody').innerHTML = bodyHTML || '';
+  document.getElementById('checkStatusClose').style.display = closable ? '' : 'none';
+}
+function closeCheckStatusBox(){
+  const box = document.getElementById('checkStatusBox');
+  if(box) box.classList.remove('show');
+}
+
 async function checkForUpdatesViaAPI(){
   const btn = document.getElementById('apiCheckBtn');
-  const statusEl = document.getElementById('apiCheckStatus');
   if(!anthropicKey()){
-    statusEl.textContent = anthropicErrorMessage({code:'no-key'});
+    showCheckStatus('failure', '✕ No API key', anthropicErrorMessage({code:'no-key'}), true);
     return;
   }
   if(fixturesInCheckWindow().length === 0){
-    statusEl.textContent = 'Nothing to check right now — no fixtures recently played or within the next ~10 weeks.';
+    showCheckStatus('review', 'Nothing to check right now', 'No fixtures recently played or within the next ~10 weeks.', true);
     return;
   }
   btn.disabled = true;
@@ -1707,7 +1753,10 @@ async function checkForUpdatesViaAPI(){
 
   for(let attempt=1; attempt<=maxAttempts; attempt++){
     try{
-      statusEl.textContent = attempt===1 ? 'Asking Claude to check mancity.com…' : `Retrying (attempt ${attempt} of ${maxAttempts})…`;
+      showCheckStatus('progress',
+        attempt===1 ? 'Checking mancity.com…' : `Retrying — attempt ${attempt} of ${maxAttempts}`,
+        attempt===1 ? 'Asking Claude to search mancity.com and compare it to your current fixtures…' : 'Narrowing the search and trying again…',
+        false);
       const { text, truncated } = await anthropicRequest(buildFixtureCheckPrompt(instruction), maxTokens);
       const { value: parsed, partial } = jsonRepair(text);
       if(!parsed || typeof parsed.updates !== 'object') throw new Error('unexpected response shape');
@@ -1718,16 +1767,23 @@ async function checkForUpdatesViaAPI(){
 
       if(n === 0 && reliable){
         // Nothing to review — apply immediately so "last checked" still moves forward,
-        // rather than leaving Neil to click Apply on an empty diff for no reason.
-        applyFixtureImport();
+        // rather than leaving Neil to click Apply on an empty diff for no reason. The
+        // panel itself stays open so the success box is actually seen before it closes.
+        const {applied} = applyFixtureUpdateData(parsed);
+        const checkedStr = new Date(settings.fixtureDataCheckedOn+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+        showCheckStatus('success', '✓ Up to date', `No changes found. Last checked date updated to ${checkedStr}. This will close itself shortly — or close it now.`, true);
+        setTimeout(closeCheckStatusBox, 4000);
         btn.disabled = false;
         return;
       }
 
-      const partialNote = (partial || truncated) ? ' (reply was cut short — double-check before applying)' : '';
-      statusEl.textContent = n
-        ? `Found ${n} change${n>1?'s':''}${partialNote} — review below, then press Apply update to finish.`
-        : `Checked, but the reply was cut short — review below before applying.`;
+      if(n > 0){
+        showCheckStatus('review', `${n} change${n>1?'s':''} found`,
+          (partial||truncated ? 'Reply was cut short — double-check the detail below.<br>' : '') +
+          'Review the JSON below, then press <strong>Apply update</strong> to finish.', true);
+      }else{
+        showCheckStatus('review', 'Reply was cut short', 'Couldn\'t confirm cleanly — review the JSON below before applying, or just try the check again.', true);
+      }
       btn.disabled = false;
       return;
     }catch(e){
@@ -1745,24 +1801,14 @@ async function checkForUpdatesViaAPI(){
       }
     }
   }
-  statusEl.textContent = `${anthropicErrorMessage(lastError)} See "Backup option" below.`;
+  showCheckStatus('failure', '✕ Check failed', `${anthropicErrorMessage(lastError)} See "Backup option" below.`, true);
   btn.disabled = false;
 }
 
-function applyFixtureImport(){
-  const statusEl = document.getElementById('fixtureImportStatus');
-  const raw = document.getElementById('fixtureImportText').value.trim();
-  let parsed;
-  try{
-    parsed = JSON.parse(raw);
-  }catch(e){
-    statusEl.textContent = 'That isn\'t valid JSON — check it was copied in full and try again.';
-    return;
-  }
-  if(!parsed || typeof parsed !== 'object' || !parsed.updates || typeof parsed.updates !== 'object'){
-    statusEl.textContent = 'Unrecognised format — expecting {"checkedOn":"...", "updates":{...}}.';
-    return;
-  }
+// Pure data step — patches fixtureOverrides/kickoffs and bumps the checked-date.
+// Shared by the manual "Apply update" button and the automatic zero-change path,
+// so the checked-date always moves forward the same way regardless of route.
+function applyFixtureUpdateData(parsed){
   const validIds = new Set(FIXTURES.map(f=>f.id));
   let applied = 0, skipped = 0;
   Object.keys(parsed.updates).forEach(fid=>{
@@ -1782,13 +1828,27 @@ function applyFixtureImport(){
     }
     applied++;
   });
-  if(parsed.checkedOn){
-    settings.fixtureDataCheckedOn = parsed.checkedOn;
-  } else {
-    settings.fixtureDataCheckedOn = new Date().toISOString().slice(0,10);
-  }
+  settings.fixtureDataCheckedOn = parsed.checkedOn || new Date().toISOString().slice(0,10);
   saveSettings();
   render();
+  return {applied, skipped};
+}
+
+function applyFixtureImport(){
+  const statusEl = document.getElementById('fixtureImportStatus');
+  const raw = document.getElementById('fixtureImportText').value.trim();
+  let parsed;
+  try{
+    parsed = JSON.parse(raw);
+  }catch(e){
+    statusEl.textContent = 'That isn\'t valid JSON — check it was copied in full and try again.';
+    return;
+  }
+  if(!parsed || typeof parsed !== 'object' || !parsed.updates || typeof parsed.updates !== 'object'){
+    statusEl.textContent = 'Unrecognised format — expecting {"checkedOn":"...", "updates":{...}}.';
+    return;
+  }
+  const {applied, skipped} = applyFixtureUpdateData(parsed);
   closeFixtureImport();
   const checkedStr = new Date(settings.fixtureDataCheckedOn+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'});
   showToast(applied === 0
