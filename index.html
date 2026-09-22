@@ -576,6 +576,11 @@
    instead of a comment that drifts out of sync with the real thing.
    ===================================================================== */
 const CHANGELOG = [
+  {version:'1.34.0', date:'2026-09-22', notes:[
+    'Fixed a real miss: the Fulham fixture\'s kick-off moved to 12:30 (TV pick) and the check reported no change, even 2 days after it was public. Cause: the check only looked at mancity.com, but Premier League TV-schedule changes are announced by the league and reported by sports news (Sky Sports, BBC Sport etc.) before the club\'s own site catches up \u2014 sometimes by a day or more.',
+    'The check now also looks for TV-picks/broadcast news for the fixtures in range, and treats a dated, credible report from there as a real kick-off change. The Confirmed/Provisional status field is unaffected \u2014 that still only flips once mancity.com itself drops its "subject to change" flag, since that\'s specifically about the club\'s own commitment, not the broadcast schedule.',
+    'Timeout retries still narrow the search to stay fast, but no longer explicitly exclude the TV-picks source \u2014 previously they were only allowed to look at mancity.com, which would have made this exact miss more likely on a retry.'
+  ]},
   {version:'1.33.0', date:'2026-08-26', notes:[
     'Fixture check now shows a defined, colour-coded status box instead of a subtle grey line \u2014 blue while checking, green on a clean success, amber when something needs review, red on failure. Progress messages (checking\u2026, retrying\u2026) appear in this box as they happen.',
     'On a clean "nothing changed" result, the box shows the confirmation and closes itself after a few seconds (or close it immediately) \u2014 the underlying panel now stays open until then, so the result is actually seen rather than vanishing instantly.',
@@ -1698,16 +1703,22 @@ function buildFixtureCheckPrompt(instruction){
     return `${f.id} | ${f.opp} | ${d} | KO ${ko} (${koStatus(f.id)})${score ? ' | FT '+score : ''}`;
   }).join('\n');
 
-  return `Check mancity.com for Manchester City ${settings.seasonLabel} men's first-team HOME fixture changes (postponements, kick-off time confirmations) and results, compared to what I already have below (last checked ${settings.fixtureDataCheckedOn}). Today is ${now.toISOString().slice(0,10)}.
+  return `Check for Manchester City ${settings.seasonLabel} men's first-team HOME fixture changes (postponements, kick-off time confirmations) and results, compared to what I already have below (last checked ${settings.fixtureDataCheckedOn}). Today is ${now.toISOString().slice(0,10)}.
 
 Only these fixtures are within range to plausibly have new information (recently played, or within the next ~10 weeks — TV selections for anything further out haven't been made yet, so don't spend time on fixtures outside this list):
 ${fixtureTable}
 
-For each one still marked "provisional", check whether mancity.com's site now shows the date & kick-off without a "subject to change" flag — if so it's confirmed. Never mark a fixture confirmed on assumption; only when the club's own site has dropped the flag.
+Check TWO kinds of source, not just one:
+1. mancity.com/fixtures/mens — the club's own listing, and the only source that can confirm a fixture (see below).
+2. Premier League broadcast/TV selection news (Sky Sports, BBC Sport, or similar UK sports outlets) — the Premier League announces TV picks roughly 5–8 weeks out, and sports news sites usually report the new kick-off time a day or more before mancity.com's own page is updated to match. A kick-off time reported this way, from a dated, credible sports-news source, counts as a real change even if mancity.com hasn't caught up yet — use it.
+
+Confirmed status is different and stricter: only flip a fixture from provisional to confirmed once mancity.com's own site has actually dropped its "subject to change" flag. Never mark confirmed on assumption, and never confirm it just because a news site reported a TV pick — the club's own site is the only source for that specific field.
+
+For each one still marked "provisional", check whether mancity.com's site now shows the date & kick-off without a "subject to change" flag — if so it's confirmed.
 
 Respond with ONLY a JSON object, no markdown fences, no prose, in exactly this shape:
 {"checkedOn":"YYYY-MM-DD","updates":{"<fixture id>":{"date":"YYYY-MM-DD","kickoff":"HH:MM","score":"3-1","koStatus":"confirmed"}}}
-Only include a fixture in "updates" if something actually changed since what I gave you above (including a provisional fixture becoming confirmed); omit keys that didn't change for that fixture. If nothing changed, return {"checkedOn":"YYYY-MM-DD","updates":{}}.${instruction ? '\n\n' + instruction : ''}`;
+Only include a fixture in "updates" if something actually changed since what I gave you above (including a provisional fixture becoming confirmed, or a kick-off time moved for TV); omit keys that didn't change for that fixture. If nothing changed, return {"checkedOn":"YYYY-MM-DD","updates":{}}.${instruction ? '\n\n' + instruction : ''}`;
 }
 
 // Calls the Anthropic API with the user's own key. Retries change the request each
@@ -1793,8 +1804,8 @@ async function checkForUpdatesViaAPI(){
       if(e.code === 'timeout'){
         maxTokens = 1200;
         instruction = attempt === 1
-          ? 'Use at most 2 targeted web searches — go straight to mancity.com/fixtures/mens rather than searching broadly.'
-          : `Use at most 1 web search, straight to mancity.com/fixtures/mens. If a full check isn't possible that quickly, return {"checkedOn":"${new Date().toISOString().slice(0,10)}","updates":{}} rather than continuing to search.`;
+          ? 'Use at most 2 targeted web searches total — one for mancity.com/fixtures/mens, one for Premier League TV picks/broadcast news for these fixtures. Skip broader exploratory searching.'
+          : `Use at most 1 web search — whichever of mancity.com or a Premier League TV-picks search is more likely to answer it for these specific fixtures. If a full check isn't possible that quickly, return {"checkedOn":"${new Date().toISOString().slice(0,10)}","updates":{}} rather than continuing to search.`;
       }else{
         maxTokens = Math.min(maxTokens * 2, 4000);
         instruction = 'Return valid, complete JSON. Keep it compact.';
