@@ -576,6 +576,9 @@
    instead of a comment that drifts out of sync with the real thing.
    ===================================================================== */
 const CHANGELOG = [
+  {version:'1.34.1', date:'2026-10-28', notes:[
+    'Fixed results not being picked up for earlier matches. The fixture check only looked back 4 days for results, so any match played longer ago with no score recorded was never asked about. It now always includes every played fixture that has no result, however old, and tells Claude the result is missing.'
+  ]},
   {version:'1.34.0', date:'2026-09-22', notes:[
     'Fixed a real miss: the Fulham fixture\'s kick-off moved to 12:30 (TV pick) and the check reported no change, even 2 days after it was public. Cause: the check only looked at mancity.com, but Premier League TV-schedule changes are announced by the league and reported by sports news (Sky Sports, BBC Sport etc.) before the club\'s own site catches up \u2014 sometimes by a day or more.',
     'The check now also looks for TV-picks/broadcast news for the fixtures in range, and treats a dated, credible report from there as a real kick-off change. The Confirmed/Provisional status field is unaffected \u2014 that still only flips once mancity.com itself drops its "subject to change" flag, since that\'s specifically about the club\'s own commitment, not the broadcast schedule.',
@@ -1688,6 +1691,9 @@ function fixturesInCheckWindow(){
   const nearCutoff = new Date(now); nearCutoff.setDate(nearCutoff.getDate()+70);          // ~10 weeks — beyond this, TV picks genuinely don't exist yet
   return FIXTURES.filter(f=>{
     const d = fixtureDate(f);
+    // A played match with no result recorded is always worth asking about, however long
+    // ago it was — otherwise a missed result is never picked up once it's >4 days old.
+    if(d < now && !getScore(f.id)) return true;
     return d >= recentCutoff && d <= nearCutoff;
   });
 }
@@ -1700,12 +1706,13 @@ function buildFixtureCheckPrompt(instruction){
     const d = fixtureDate(f).toISOString().slice(0,10);
     const ko = settings.kickoffs[f.id] || 'TBC';
     const score = getScore(f.id) || '';
-    return `${f.id} | ${f.opp} | ${d} | KO ${ko} (${koStatus(f.id)})${score ? ' | FT '+score : ''}`;
+    const played = fixtureDate(f) < now;
+    return `${f.id} | ${f.opp} | ${d} | KO ${ko} (${koStatus(f.id)})${score ? ' | FT '+score : (played ? ' | PLAYED - RESULT MISSING' : '')}`;
   }).join('\n');
 
   return `Check for Manchester City ${settings.seasonLabel} men's first-team HOME fixture changes (postponements, kick-off time confirmations) and results, compared to what I already have below (last checked ${settings.fixtureDataCheckedOn}). Today is ${now.toISOString().slice(0,10)}.
 
-Only these fixtures are within range to plausibly have new information (recently played, or within the next ~10 weeks — TV selections for anything further out haven't been made yet, so don't spend time on fixtures outside this list):
+Only these fixtures are within range to plausibly have new information (played with no result recorded yet — find the final score; or within the next ~10 weeks — TV selections for anything further out haven't been made yet, so don't spend time on fixtures outside this list):
 ${fixtureTable}
 
 Check TWO kinds of source, not just one:
